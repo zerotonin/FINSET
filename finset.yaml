@@ -1,8 +1,8 @@
-# pylace.yaml 
+# finset.yaml 
 
-# install: conda env create -f pylace.yaml 
-# update:  conda env update -f pylace.yaml 
-name: pylace
+# install: conda env create -f finset.yaml 
+# update:  conda env update -f finset.yaml 
+name: finset
 dependencies:
   - python=3.7
   - pip
