@@ -1,0 +1,7 @@
+__pycache__/*
+data_handlers/__pycache__/*
+fish_data_base/__pycache__/*
+trace_analysis/__pycache__/*
+data_base_analyser/__pycache__/*
+plotting/__pycache__/*
+docs/*
