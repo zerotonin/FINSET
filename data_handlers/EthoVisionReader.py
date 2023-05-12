@@ -217,8 +217,8 @@ class EthoVisionReader:
             self.plot_interpolated_coordinates(meta_data, source_points, new_corners, interpolated_points)
 
         # Update the 'X_center_cm' and 'Y_center_cm' columns with the interpolated coordinates
-        meta_data['X_center_cm'] = interpolated_points[:, 0]
-        meta_data['Y_center_cm'] = interpolated_points[:, 1]
+        meta_data['X_center_cm'] = interpolated_points[:, 1]
+        meta_data['Y_center_cm'] = interpolated_points[:, 0]
 
         return meta_data
 
