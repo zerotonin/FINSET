@@ -42,7 +42,7 @@ def read_all_ethovision_files_to_pandas(xlsx_files):
     return pd.concat(all_data)
 
 
-def read_all_ethovision_files_to_sql(xlsx_files, db_connection):
+def read_all_ethovision_files_to_sql(xlsx_files, db_connection,correction_mode = False):
     """
     Reads all EthoVision Excel files in the given list using the EthoVisionReader class
     and stores the data in the provided SQLite database.
@@ -55,7 +55,7 @@ def read_all_ethovision_files_to_sql(xlsx_files, db_connection):
         None
     """
     for file in  tqdm(xlsx_files,desc='reading files'):
-        etho_vision_reader = EthoVisionReader(file,correction_mode=True)
+        etho_vision_reader = EthoVisionReader(file,correction_mode=correction_mode)
         file_data = etho_vision_reader.main()
         file_data.to_sql('ethovision_data', db_connection, if_exists='append', index=False)
 
@@ -72,7 +72,8 @@ def create_database(db_name):
     return sqlite3.connect(db_name)
 
 # Specify the folder to search for .xlsx files
-folder = "/media/bgeurten/TOSHIBA_EXT/alex/raw_data/"
+#folder = "/media/bgeurten/TOSHIBA_EXT/alex/raw_data/"
+folder = "/home/bgeurten/METH/raw_data/"
 
 # Get a list of all .xlsx files in the folder and its subdirectories
 xlsx_files = get_all_xlsx_files(folder)
