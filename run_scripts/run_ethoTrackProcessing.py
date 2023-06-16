@@ -15,7 +15,7 @@ import matplotlib.cm as cm
 
 #[print(x.shape) for x in histograms]
 # Usage
-tag = 'habituation2023'
+tag = 'methApplication2023'
 parent_directory = '/home/bgeurten/ethoVision_database/'
 
 # Compile data daywise
