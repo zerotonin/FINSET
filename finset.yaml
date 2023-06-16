@@ -15,6 +15,7 @@ dependencies:
   - yaml
   - pyyaml
   - tqdm
+  - openpyxl
   - seaborn
   - pip:
       - VidStab
