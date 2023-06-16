@@ -54,10 +54,14 @@ def read_all_ethovision_files_to_sql(xlsx_files, db_connection,correction_mode =
     Returns:
         None
     """
-    for file in  tqdm(xlsx_files,desc='reading files'):
+    pbar= tqdm(total=len(xlsx_files))
+    for file in  xlsx_files:
+        pbar.set_description(f'reading file: {file}')
         etho_vision_reader = EthoVisionReader(file,correction_mode=correction_mode)
         file_data = etho_vision_reader.main()
         file_data.to_sql('ethovision_data', db_connection, if_exists='append', index=False)
+        pbar.update()
+    pbar.close()
 
 def create_database(db_name):
     """
@@ -79,7 +83,7 @@ folder = "/home/bgeurten/METH/raw_data/"
 xlsx_files = get_all_xlsx_files(folder)
 
 # Create a SQLite database and connect to it
-db_name = "/home/bgeurten/fishDataBase/alex_ethovision_data.db"
+db_name = "/home/bgeurten/ethoVision_database/methApplication_2023.db"
 db_connection = create_database(db_name)
 
 # Read all EthoVision Excel files and store the data in the SQLite database
