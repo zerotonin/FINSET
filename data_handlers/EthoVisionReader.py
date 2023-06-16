@@ -126,12 +126,18 @@ class EthoVisionReader:
         Returns:
             pd.DataFrame: A DataFrame with the corrected 'X_center_cm' and 'Y_center_cm' columns.
         """
+
+        df['X_center_cm']       = df['X_center_cm'].replace('-', np.nan)
+        df['Y_center_cm']       = df['Y_center_cm'].replace('-', np.nan)
+        df['Area_cm²']          = df['Area_cm²'].replace('-', np.nan)
+        df['Areachange_cm²']    = df['Areachange_cm²'].replace('-', np.nan)
+        df['Distance_moved_cm'] = df['Distance_moved_cm'].replace('-', np.nan)
         if self.correction_mode:
-            df['X_center_cm']       = df['X_center_cm'].replace('-', np.nan).apply(lambda x: float(x) * self.correction_factor)
-            df['Y_center_cm']       = df['Y_center_cm'].replace('-', np.nan).apply(lambda x: float(x) * self.correction_factor)
-            df['Area_cm²']          = df['Area_cm²'].replace('-', np.nan).apply(lambda x: float(x) * self.correction_factor)
-            df['Areachange_cm²']    = df['Areachange_cm²'].replace('-', np.nan).apply(lambda x: float(x) * self.correction_factor)
-            df['Distance_moved_cm'] = df['Distance_moved_cm'].replace('-', np.nan).apply(lambda x: float(x) * self.correction_factor)
+            df['X_center_cm']       = df['X_center_cm'].apply(lambda x: float(x) * self.correction_factor)
+            df['Y_center_cm']       = df['Y_center_cm'].apply(lambda x: float(x) * self.correction_factor)
+            df['Area_cm²']          = df['Area_cm²'].apply(lambda x: float(x) * self.correction_factor)
+            df['Areachange_cm²']    = df['Areachange_cm²'].apply(lambda x: float(x) * self.correction_factor)
+            df['Distance_moved_cm'] = df['Distance_moved_cm'].apply(lambda x: float(x) * self.correction_factor)
 
         return df
 
