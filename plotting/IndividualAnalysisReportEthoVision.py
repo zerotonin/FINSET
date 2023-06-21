@@ -50,27 +50,36 @@ class IndividualAnalysisReportEthoVision:
         # Extract the necessary data from the self.result_df
         days = self.result_df['Day_number']
         metrics = [
-            ('Median_activity_duration_s', 'Activity_fraction', 'Activity'),
-            ('Median_freezing_duration_s', 'Freezing_fraction', 'Freezing'),
-            ('Median_tigmotaxis_duration_s', 'Tigmotaxis_fraction', 'Tigmotaxis')
+            ('Median_activity_duration_s',  'activity_duration_s', 'Activity_fraction', 'Activity'),
+            ('Median_freezing_duration_s',  'freezing_duration_s', 'Freezing_fraction', 'Freezing'),
+            ('Median_tigmotaxis_duration_s','tigmotaxis_duration_s', 'Tigmotaxis_fraction', 'Tigmotaxis')
         ]
 
         # Create a figure with subplots for bout metrics and fractions
-        fig, axes = plt.subplots(len(metrics), 2, figsize=(12, 12))
+        fig, axes = plt.subplots(len(metrics), 3, figsize=(12, 12))
         fig.tight_layout(pad=4)
 
-        for i, (duration_col, fraction_col, title_prefix) in enumerate(metrics):
-            # Plot median durations
-            axes[i, 0].plot(days, self.result_df[duration_col], marker='o')
+        for i, (duration_col, total_dur_col, fraction_col, title_prefix) in enumerate(metrics):
+
+
+            # Plot total_duration
+            axes[i, 0].plot(days, self.result_df[total_dur_col], marker='o')
             axes[i, 0].set_xlabel('Day number')
-            axes[i, 0].set_ylabel(f'Median {title_prefix.lower()} duration (s)')
-            axes[i, 0].set_title(f'Median {title_prefix} Duration over Days')
+            axes[i, 0].set_ylabel(f'{title_prefix.lower()} total duration (s)')
+            axes[i, 0].set_title(f'{title_prefix} Total Duration over Days')
+
+
+            # Plot median durations
+            axes[i, 1].plot(days, self.result_df[duration_col], marker='o')
+            axes[i, 1].set_xlabel('Day number')
+            axes[i, 1].set_ylabel(f'Median {title_prefix.lower()} bout duration (s)')
+            axes[i, 1].set_title(f'Median {title_prefix} Bout Duration over Days')
 
             # Plot fractions
-            axes[i, 1].plot(days, self.result_df[fraction_col], marker='o')
-            axes[i, 1].set_xlabel('Day number')
-            axes[i, 1].set_ylabel(f'{title_prefix.lower()} fraction')
-            axes[i, 1].set_title(f'{title_prefix} Fraction over Days')
+            axes[i, 2].plot(days, self.result_df[fraction_col], marker='o')
+            axes[i, 2].set_xlabel('Day number')
+            axes[i, 2].set_ylabel(f'{title_prefix.lower()} fraction')
+            axes[i, 2].set_title(f'{title_prefix} Fraction over Days')
 
         return fig
 
@@ -123,16 +132,20 @@ class IndividualAnalysisReportEthoVision:
         # Extract the necessary data from the self.result_df
         days = self.result_df['Day_number']
         metrics = [
-            ('Median_top_duration_s', 'Top duration (s)'),
+            ('top_duration_s', 'total top duration (s)'),
+            ('Median_top_duration_s', 'top bout duration (s)'),
             ('Top_fraction', 'Top fraction'),
-            ('Median_bottom_duration_s', 'Bottom duration (s)'),
+            ('bottom_duration_s', 'total bottom duration (s)'),
+            ('Median_bottom_duration_s', 'bottom bout duration (s)'),
             ('Bottom_fraction', 'Bottom fraction'),
             ('Latency_to_top_s', 'Latency to top (s)'),
+            ('top_zone_entries', 'entries into top zone'),
             ('Tigmotaxis_transition_freq', 'Tigmotaxis transitio frequemcy, Hz')
         ]
 
         # Create a figure with subplots for bout and transition metrics
-        fig, axes = plt.subplots(len(metrics), 1, figsize=(8, 18))
+        fig, axes = plt.subplots(int(len(metrics)/3), 3, figsize=(18, 18))
+        axes = axes.flatten()
         fig.tight_layout(pad=4)
 
         for i, (metric_col, ylabel) in enumerate(metrics):
