@@ -253,13 +253,14 @@ class EthovisionDataProcessor:
             total_time (float): The total recording time for the day in seconds.
 
         Returns:
-            bout_metrics (dict): A dictionary containing median duration and fraction for each bout type.
+            bout_metrics (dict): A dictionary containing median bout duration and fraction for each bout type.
         """
         bout_metrics = {}
         for bout_type in ['activity', 'freezing', 'in_top_margin', 'in_bottom_margin', 'tigmo_taxis']:
             median_duration, fraction = self.calculate_bout_metrics(day_data, bout_type, total_time)
             bout_metrics[f'Median_{bout_type}_duration_s'] = median_duration
             bout_metrics[f'{bout_type}_fraction'] = fraction
+            bout_metrics[f'{bout_type}_duration_s'] = fraction*total_time
         return bout_metrics
 
     def calculate_latency_and_transitions_for_day(self, day_data):
@@ -343,16 +344,27 @@ class EthovisionDataProcessor:
 
         median_speeds               = list()
         gross_speeds                = list()
+
         median_activity_durations   = list()
         activity_fractions          = list()
+        activity_duration_s        = list()
+
         median_freezing_durations   = list()
         freezing_fractions          = list()
+        freezing_duration_s        = list()
+
         median_top_durations        = list()
         top_fractions               = list()
+        top_duration_s             = list()
+
         median_bottom_durations     = list()
         bottom_fractions            = list()
+        bottom_duration_s          = list()
+
         median_tigmotaxis_durations = list()
         tigmotaxis_fractions        = list()
+        tigmotaxis_duration_s      = list()
+
         tigmotaxis_transition_freq  = list()
         time_to_top                 = list()
         distance_travelled          = list()
@@ -369,14 +381,19 @@ class EthovisionDataProcessor:
             # Bout metrics
             bout_metrics = self.calculate_bout_metrics_for_day(day_data, total_time)
             median_activity_durations.append(bout_metrics['Median_activity_duration_s'])
+            activity_duration_s.append(bout_metrics['activity_duration_s'])
             activity_fractions.append(bout_metrics['activity_fraction'])
             median_freezing_durations.append(bout_metrics['Median_freezing_duration_s'])
+            freezing_duration_s.append(bout_metrics['freezing_duration_s'])
             freezing_fractions.append(bout_metrics['freezing_fraction'])
             median_top_durations.append(bout_metrics['Median_in_top_margin_duration_s'])
+            top_duration_s.append(bout_metrics['in_top_margin_duration_s'])
             top_fractions.append(bout_metrics['in_top_margin_fraction'])
             median_bottom_durations.append(bout_metrics['Median_in_bottom_margin_duration_s'])
+            bottom_duration_s.append(bout_metrics['in_bottom_margin_duration_s'])
             bottom_fractions.append(bout_metrics['in_bottom_margin_fraction'])
             median_tigmotaxis_durations.append(bout_metrics['Median_tigmo_taxis_duration_s'])
+            tigmotaxis_duration_s.append(bout_metrics['tigmo_taxis_duration_s'])
             tigmotaxis_fractions.append(bout_metrics['tigmo_taxis_fraction'])
 
             # Latency and transitions
