@@ -173,27 +173,32 @@ class EthovisionDataProcessor:
         except:
             return np.nan
 
-    def side_zonening(self,day_data):
+    def zonening_analysis(self,day_data):
         """
         Calculate the total number of transitions in the zone map between the lateral zones.
+        and general entries into the top zone
         This represents the etho-vision version of the tigmotaxis analysis.
 
         Returns:
             int: The total number of transitions between the specified zones.
         """
-        transitions = 0
-        target_transitions = [(1, 4), (4, 1), (4, 7), (7, 4), (9, 6), (6, 9), (6, 3), (3, 6)]
+        tigmo_transitions = 0
+        into_top_transitions = 0
+        tigmo_transition_patterns = [(1, 4), (4, 1), (4, 7), (7, 4), (9, 6), (6, 9), (6, 3), (3, 6)]
+        into_top_transition_patterns = [(4, 7), (5, 7), (4, 8), (5, 8), (6, 8), (5, 9), (6, 9)]
         
         for i in range(len(day_data) - 1):
             current_zone = day_data['zone_map'].iloc[i]
             next_zone = day_data['zone_map'].iloc[i + 1]
             
-            if (current_zone, next_zone) in target_transitions:
-                transitions += 1
+            if (current_zone, next_zone) in tigmo_transition_patterns:
+                tigmo_transitions += 1
+
+            if (current_zone, next_zone) in into_top_transition_patterns:
+                into_top_transitions += 1
                 
-        return transitions
-
-
+        return tigmo_transitions, into_top_transitions    
+    
     def calculate_bout_metrics(self, data, column_name, total_time):
         """
         Calculate the median bout duration and the fraction of time spent in a given behavioral state
@@ -271,11 +276,13 @@ class EthovisionDataProcessor:
             day_data (pd.DataFrame): A DataFrame containing the data for a single day.
 
         Returns:
-            latency_and_transitions (dict): A dictionary containing latency to the top and tigmotaxis transitions.
+            latency_and_transitions (dict): A dictionary containing latency to the top, transiotions into top, and tigmotaxis transitions.
         """
+        tigmo_transitions, into_top_transitions = self.zonening_analysis(day_data)
         return {
             'Latency_to_top_s': self.latency_to_top(day_data),
-            'Tigmotaxis_transitions': self.side_zonening(day_data)
+            'top_zone_entries': into_top_transitions,
+            'Tigmotaxis_transitions':tigmo_transitions
         }
 
     def calculate_distance_and_histogram_for_day(self, day_data, tank_width, tank_height, num_bins_2D_hist):
@@ -367,6 +374,7 @@ class EthovisionDataProcessor:
 
         tigmotaxis_transition_freq  = list()
         time_to_top                 = list()
+        top_zone_entries            = list()
         distance_travelled          = list()
         histograms                  = list()
 
@@ -399,6 +407,7 @@ class EthovisionDataProcessor:
             # Latency and transitions
             latency_and_transitions = self.calculate_latency_and_transitions_for_day(day_data)
             time_to_top.append(latency_and_transitions['Latency_to_top_s'])
+            top_zone_entries.append(latency_and_transitions['top_zone_entries'])
             tigmotaxis_transition_freq.append(latency_and_transitions['Tigmotaxis_transitions']/total_time)
 
             # Distance travelled and 2D histogram
@@ -426,6 +435,7 @@ class EthovisionDataProcessor:
             'Tigmotaxis_fraction': tigmotaxis_fractions,
             'Tigmotaxis_transition_freq': tigmotaxis_transition_freq,
             'Latency_to_top_s': time_to_top,
+            'top_zone_entries': top_zone_entries,
             'Distance_travelled_cm': distance_travelled
         })
         # add subject information
