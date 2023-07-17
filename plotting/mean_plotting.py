@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 
 parent_dir = "D:\\uni\\Biologie\\Master\\Masterarbeit_NZ\\analyses\\habituation_data\\python_analyses\\ethoVision_database\\habituation_individuals"
+parent_dir = '/home/bgeurten/ethoVision_database/'
 file_name = 'collated_data.csv'
 
 file_positions = []
