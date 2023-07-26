@@ -87,11 +87,12 @@ frantic_threshold = 8.0 # cm/s
 for position in tqdm(file_positions, desc='reading files...'):
     df = pd.read_csv(position)
     df['frantic_swim'] = df.speed_cmPs > frantic_threshold
-    df.freezing = df.speed_cmPs        < speed_threshold
+    #df.freezing = df.speed_cmPs        < speed_threshold
     df.in_bottom_margin = df.Y_center_cm < bottom_threshold
     df.in_left_margin  = df.Y_center_cm < side_threshold
     df.in_right_margin = df.Y_center_cm > (20.5-side_threshold)
     df.activity = df.speed_cmPs > speed_threshold
+    df['freezing'] = (df['activity']) & (df['in_bottom_margin'])
     df['in_side_margin'] = df[['in_left_margin', 'in_right_margin']].any(axis=1)
     df['vert_activity'] = df.speed_vert_cmPs > speed_threshold
     df['tigmo_taxis'] = df[['vert_activity', 'in_side_margin']].all(axis=1)
