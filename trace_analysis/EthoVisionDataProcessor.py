@@ -104,7 +104,7 @@ class EthovisionDataProcessor:
                                                 frantic. This function specifically uses a
                                                 different threshold of 8 cm/s. Defaults to 8.
         """
-        
+
         self.subject_df['frantic_swim'] = self.subject_df.speed_cmPs > speed_threshold
 
     def compute_zones(self):
@@ -360,6 +360,7 @@ class EthovisionDataProcessor:
         self.add_day_number()
         self.calculate_speed()
         self.set_activity_status()
+        self.set_frantic_status
         self.compute_zones()
         self.map_zones_to_integers()
         self.side_tigmotaxis()
