@@ -78,12 +78,23 @@ bottom = np.full((22, 64), np.nan)
 tigmo_taxis = np.full((22, 64), np.nan)
 stress = np.full((22, 64), np.nan)
 
+bottom_threshold  = 2.5 # cm    
+side_threshold    = 2.0 # which is half a body length of 4 cm long adult zebrafish
+speed_threshold   = 0.5 # cm/s  
+frantic_threshold = 8.0 # cm/s
+
 # Iterate over each file position and extract the relevant data
 for position in tqdm(file_positions, desc='reading files...'):
     df = pd.read_csv(position)
-    df['frantic_swim'] = df.speed_cmPs > 8
-    df.freezing = df.speed_cmPs < 0.5
-    df.in_bottom_margin = df.Y_center_cm < 2.5
+    df['frantic_swim'] = df.speed_cmPs > frantic_threshold
+    df.freezing = df.speed_cmPs        < speed_threshold
+    df.in_bottom_margin = df.Y_center_cm < bottom_threshold
+    df.in_left_margin  = df.Y_center_cm < side_threshold
+    df.in_right_margin = df.Y_center_cm > (20.5-side_threshold)
+    df.activity = df.speed_cmPs > speed_threshold
+    df['in_side_margin'] = df[['in_left_margin', 'in_right_margin']].any(axis=1)
+    df['tigmo_taxis'] = df[['activity', 'in_side_margin']].all(axis=1)
+    df.loc[df.frantic_swim, 'tigmo_taxis'] = False
     df['stress_index'] = df[['frantic_swim', 'freezing', 'in_bottom_margin']].any(axis=1)
     for day_num in df.Day_number.unique():
         subset = df[df['Day_number'] == day_num]
