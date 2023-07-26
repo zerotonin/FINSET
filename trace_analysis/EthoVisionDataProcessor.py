@@ -79,6 +79,7 @@ class EthovisionDataProcessor:
             self.subject_df.loc[self.subject_df['Day_number'] == day_number, 'speed_cmPs'] = speed_cmPs
             self.subject_df.loc[self.subject_df['Day_number'] == day_number, 'speed_vert_cmPs'] = vertical_speed
             self.subject_df.loc[self.subject_df['Day_number'] == day_number, 'speed_horiz_cmPs'] = horizontal_speed
+
     def set_activity_status(self, speed_threshold=0.5):
         """
         Adds an 'activity' column to the subject DataFrame, indicating whether the
@@ -90,6 +91,21 @@ class EthovisionDataProcessor:
         """
 
         self.subject_df['activity'] = self.subject_df.speed_cmPs > speed_threshold
+    
+    def set_frantic_status(self, speed_threshold=8.0):
+        """
+            Adds a 'frantic_status' column to the zebrafish DataFrame, indicating whether the
+            zebrafish's swimming speed is greater than the given speed_threshold. This threshold
+            originates from comparing the swimming histograms of zebrafish that have
+            been habituated for 15 days against their swimming patterns on the first day.
+
+            Args:
+                speed_threshold (float, optional): The threshold for considering a zebrafish
+                                                frantic. This function specifically uses a
+                                                different threshold of 8 cm/s. Defaults to 8.
+        """
+        
+        self.subject_df['frantic_swim'] = self.subject_df.speed_cmPs > speed_threshold
 
     def compute_zones(self):
         """
