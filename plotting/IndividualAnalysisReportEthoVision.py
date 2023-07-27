@@ -40,48 +40,51 @@ class IndividualAnalysisReportEthoVision:
 
     def plot_bout_metrics(self):
         """
-        Plots bout metrics and fractions for activity, freezing, and tigmotaxis.
+        Plots bout metrics and fractions for activity, freezing, tigmotaxis, frantic, boldness and stress.
+        Transposes the original layout to have bout metrics as rows and data features as columns.
 
         Returns
         -------
         matplotlib.figure.Figure
-            A figure containing the subplots of bout metrics and fractions.
+            A figure containing the transposed subplots of bout metrics and fractions.
         """
         # Extract the necessary data from the self.result_df
         days = self.result_df['Day_number']
         metrics = [
             ('Median_activity_duration_s',  'activity_duration_s', 'Activity_fraction', 'Activity'),
             ('Median_freezing_duration_s',  'freezing_duration_s', 'Freezing_fraction', 'Freezing'),
-            ('Median_tigmotaxis_duration_s','tigmotaxis_duration_s', 'Tigmotaxis_fraction', 'Tigmotaxis')
+            ('Median_tigmotaxis_duration_s','tigmotaxis_duration_s', 'Tigmotaxis_fraction', 'Tigmotaxis'),
+            ('Median_frantic_duration_s',   'frantic_duration_s', 'frantic_fraction', 'Frantic'),
+            ('Median_boldness_duration_s',  'boldness_duration_s', 'boldness_fraction', 'Boldness'),
+            ('Median_stress_duration_s',    'stress_duration_s', 'stress_fraction', 'Stress')
         ]
 
         # Create a figure with subplots for bout metrics and fractions
-        fig, axes = plt.subplots(len(metrics), 3, figsize=(12, 12))
+        fig, axes = plt.subplots(3, len(metrics), figsize=(24, 12))
         fig.tight_layout(pad=4)
 
         for i, (duration_col, total_dur_col, fraction_col, title_prefix) in enumerate(metrics):
 
-
             # Plot total_duration
-            axes[i, 0].plot(days, self.result_df[total_dur_col], marker='o')
-            axes[i, 0].set_xlabel('Day number')
-            axes[i, 0].set_ylabel(f'{title_prefix.lower()} total duration (s)')
-            axes[i, 0].set_title(f'{title_prefix} Total Duration over Days')
-
+            axes[0, i].plot(days, self.result_df[total_dur_col], marker='o')
+            axes[0, i].set_xlabel('Day number')
+            axes[0, i].set_ylabel(f'{title_prefix.lower()} total duration (s)')
+            axes[0, i].set_title(f'{title_prefix} Total Duration over Days')
 
             # Plot median durations
-            axes[i, 1].plot(days, self.result_df[duration_col], marker='o')
-            axes[i, 1].set_xlabel('Day number')
-            axes[i, 1].set_ylabel(f'Median {title_prefix.lower()} bout duration (s)')
-            axes[i, 1].set_title(f'Median {title_prefix} Bout Duration over Days')
+            axes[1, i].plot(days, self.result_df[duration_col], marker='o')
+            axes[1, i].set_xlabel('Day number')
+            axes[1, i].set_ylabel(f'Median {title_prefix.lower()} bout duration (s)')
+            axes[1, i].set_title(f'Median {title_prefix} Bout Duration over Days')
 
             # Plot fractions
-            axes[i, 2].plot(days, self.result_df[fraction_col], marker='o')
-            axes[i, 2].set_xlabel('Day number')
-            axes[i, 2].set_ylabel(f'{title_prefix.lower()} fraction')
-            axes[i, 2].set_title(f'{title_prefix} Fraction over Days')
+            axes[2, i].plot(days, self.result_df[fraction_col], marker='o')
+            axes[2, i].set_xlabel('Day number')
+            axes[2, i].set_ylabel(f'{title_prefix.lower()} fraction')
+            axes[2, i].set_title(f'{title_prefix} Fraction over Days')
 
         return fig
+
 
 
 
@@ -204,6 +207,18 @@ class IndividualAnalysisReportEthoVision:
         fig.colorbar(im, cax=cbar_ax, label='Normalized frequency')
 
         return fig
+    
+    def plot_stress_score(self):
+        days = self.result_df['Day_number']
+        fig, axes = plt.subplots(figsize=(10, 6))
+        axes.plot(days, self.result_df.stress_score, marker='o',label='stress score')
+        axes.axhline(0, color='red', linestyle='--',label='chance level')  # Add a horizontal line at y=0
+        axes.set_xlabel('Day number')
+        axes.set_ylabel(f'stress score')
+        axes.set_title(f'Stress score defined as (s-b)/(s+b)')
+        axes.legend(loc='best')
+        return fig
+
 
     def report(self):
         """
@@ -219,5 +234,6 @@ class IndividualAnalysisReportEthoVision:
         f2 = self.plot_velocity_metrics()
         f3 = self.plot_bout_and_transition_metrics()
         f4 = self.plot_normalized_histograms()
+        f5 = self.plot_stress_score()
 
-        return f1, f2, f3, f4
+        return f1, f2, f3, f4, f5
