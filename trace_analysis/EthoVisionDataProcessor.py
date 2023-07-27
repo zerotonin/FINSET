@@ -105,7 +105,7 @@ class EthovisionDataProcessor:
                                                 different threshold of 8 cm/s. Defaults to 8.
         """
 
-        self.subject_df['frantic_swim'] = self.subject_df.speed_cmPs > speed_threshold
+        self.subject_df['frantic'] = self.subject_df.speed_cmPs > speed_threshold
 
     def set_bold_status(self):
         """
@@ -121,7 +121,7 @@ class EthovisionDataProcessor:
         Returns:
             None
         """
-        self.subject_df['boldness_index'] = ( self.subject_df.in_top_margin) & ~(self.subject_df.frantic_swim)
+        self.subject_df['boldness'] = ( self.subject_df.in_top_margin) & ~(self.subject_df.frantic)
 
     def set_stress_status(self):
         """
@@ -137,7 +137,7 @@ class EthovisionDataProcessor:
         Returns:
             None
         """
-        self.subject_df['stress_index'] =  self.subject_df[['tigmo_taxis','frantic_swim', 'freezing']].any(axis=1)
+        self.subject_df['stress'] =  self.subject_df[['tigmo_taxis','frantic', 'freezing']].any(axis=1)
 
 
 
@@ -311,7 +311,7 @@ class EthovisionDataProcessor:
             bout_metrics (dict): A dictionary containing median bout duration and fraction for each bout type.
         """
         bout_metrics = {}
-        for bout_type in ['activity', 'freezing', 'in_top_margin', 'in_bottom_margin', 'tigmo_taxis','stress_index','boldness_index']:
+        for bout_type in ['activity', 'freezing', 'in_top_margin', 'in_bottom_margin', 'tigmo_taxis','frantic','stress','boldness']:
             median_duration, fraction = self.calculate_bout_metrics(day_data, bout_type, total_time)
             bout_metrics[f'Median_{bout_type}_duration_s'] = median_duration
             bout_metrics[f'{bout_type}_fraction'] = fraction
@@ -395,12 +395,12 @@ class EthovisionDataProcessor:
         self.calculate_speed()
         self.set_activity_status()
         self.set_frantic_status()
-        self.set_stress_status()
-        self.set_activity_status()
         self.compute_zones()
         self.map_zones_to_integers()
         self.side_tigmotaxis()
         self.true_freezing()
+        self.set_stress_status()
+        self.set_bold_status()
 
         median_speeds               = list()
         gross_speeds                = list()
@@ -424,6 +424,10 @@ class EthovisionDataProcessor:
         median_tigmotaxis_durations = list()
         tigmotaxis_fractions        = list()
         tigmotaxis_duration_s       = list()
+
+        median_frantic_durations     = list()
+        frantic_fractions            = list()
+        frantic_duration_s           = list()
 
         median_stress_durations     = list()
         stress_fractions            = list()
@@ -466,6 +470,9 @@ class EthovisionDataProcessor:
             median_tigmotaxis_durations.append(bout_metrics['Median_tigmo_taxis_duration_s'])
             tigmotaxis_duration_s.append(bout_metrics['tigmo_taxis_duration_s'])
             tigmotaxis_fractions.append(bout_metrics['tigmo_taxis_fraction'])
+            median_frantic_durations.append(bout_metrics['Median_frantic_duration_s'])
+            frantic_duration_s.append(bout_metrics['frantic_duration_s'])
+            frantic_fractions.append(bout_metrics['frantic_fraction'])
             median_stress_durations.append(bout_metrics['Median_stress_duration_s'])
             stress_duration_s.append(bout_metrics['stress_duration_s'])
             stress_fractions.append(bout_metrics['stress_fraction'])
