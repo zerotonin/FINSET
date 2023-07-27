@@ -367,7 +367,10 @@ class DaywiseAnalysis:
             'Median_top_duration_s', 'Top_fraction', 'Median_bottom_duration_s',
             'Bottom_fraction', 'Median_tigmotaxis_duration_s',
             'Tigmotaxis_fraction', 'Tigmotaxis_transition_freq', 'Latency_to_top_s',
-            'Distance_travelled_cm'
+            'Distance_travelled_cm','stress_fraction','stress_duration_s' ,
+            'Median_stress_duration_s' , 'frantic_fraction', 'frantic_duration_s', 
+            'Median_frantic_duration_s','Median_boldness_duration_s','boldness_duration_s',
+            'boldness_duration_s', 'stress_score'
         ]
         figure_handles = list()
         for topic in topics:
