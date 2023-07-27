@@ -140,7 +140,7 @@ class IndividualAnalysisReportEthoVision:
             ('Bottom_fraction', 'Bottom fraction'),
             ('Latency_to_top_s', 'Latency to top (s)'),
             ('top_zone_entries', 'entries into top zone'),
-            ('Tigmotaxis_transition_freq', 'Tigmotaxis transitio frequemcy, Hz')
+            ('Tigmotaxis_transition_freq', 'Tigmotaxis transition frequency, Hz')
         ]
 
         # Create a figure with subplots for bout and transition metrics
