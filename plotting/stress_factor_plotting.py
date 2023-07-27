@@ -6,6 +6,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import numpy as np
+import scipy.stats as stats
 
 """
     This script is designed to visualize data from the 2023 habituation experiments of Alexander Busch. The quantifications are calculated for different categories 
@@ -76,10 +77,14 @@ frantic = np.full((22, 64), np.nan)
 freezing = np.full((22, 64), np.nan)
 bottom = np.full((22, 64), np.nan)
 tigmo_taxis = np.full((22, 64), np.nan)
+top_margin = np.full((22, 64), np.nan)
 stress = np.full((22, 64), np.nan)
+boldness = np.full((22, 64), np.nan)
+normal = np.full((22, 64), np.nan)
 
 bottom_threshold  = 2.5 # cm    
-side_threshold    = 2.0 # which is half a body length of 4 cm long adult zebrafish
+side_threshold    = 4.0 # which is half a body length of 4 cm long adult zebrafish
+top_threshold     = 4.0
 speed_threshold   = 0.5 # cm/s  
 frantic_threshold = 8.0 # cm/s
 
@@ -89,29 +94,64 @@ for position in tqdm(file_positions, desc='reading files...'):
     df['frantic_swim'] = df.speed_cmPs > frantic_threshold
     #df.freezing = df.speed_cmPs        < speed_threshold
     df.in_bottom_margin = df.Y_center_cm < bottom_threshold
-    df.in_left_margin  = df.Y_center_cm < side_threshold
-    df.in_right_margin = df.Y_center_cm > (20.5-side_threshold)
+    df.in_left_margin  = df.X_center_cm < side_threshold
+    df.in_right_margin = df.X_center_cm > (20.5-side_threshold)
+    df.in_top_margin = df.Y_center_cm > (20.5-top_threshold)
     df.activity = df.speed_cmPs > speed_threshold
     df['freezing'] = (df['activity']) & (df['in_bottom_margin'])
     df['in_side_margin'] = df[['in_left_margin', 'in_right_margin']].any(axis=1)
     df['vert_activity'] = df.speed_vert_cmPs > speed_threshold
     df['tigmo_taxis'] = df[['vert_activity', 'in_side_margin']].all(axis=1)
-    df.loc[df.frantic_swim, 'tigmo_taxis'] = False
-    df['stress_index'] = df[['tigmo_taxis','frantic_swim', 'freezing', 'in_bottom_margin']].any(axis=1)
+    #df.loc[df.in_top_margin, 'tigmo_taxis'] = False
+    df['stress_index'] = df[['tigmo_taxis','frantic_swim', 'freezing']].any(axis=1)
+    df['boldness'] = (df.in_top_margin) & (df.speed_cmPs < frantic_threshold)
+    df['normal'] = ~((df['boldness']) & (df['stress_index']))
+
+    #df.loc[df.in_top_margin, 'stress_index'] = False
     for day_num in df.Day_number.unique():
         subset = df[df['Day_number'] == day_num]
         frantic[day_num, fish_counter] = subset.frantic_swim.sum() / 25
         freezing[day_num, fish_counter] = subset.freezing.sum() / 25
-        bottom[day_num, fish_counter] = subset.in_bottom_margin.sum() / 25
         tigmo_taxis[day_num, fish_counter] = subset.tigmo_taxis.sum() / 25
-        stress[day_num, fish_counter] = subset.stress_index.sum() / 25
+        top_margin[day_num, fish_counter] = subset.in_top_margin.sum() / 25
+        stress[day_num, fish_counter] = subset.stress_index.sum() / 25 
+        boldness[day_num, fish_counter] = subset.boldness.sum() / 25 
+        normal[day_num, fish_counter] = subset.normal.sum() / 25 
     fish_counter += 1
 
 # Data for plotting
-data = [frantic, freezing, bottom, tigmo_taxis, stress]
-labels = ['Frantic Swim', 'Freezing', 'In Bottom Margin', 'Tigmo Taxis', 'Stress Index']
+data = [frantic, freezing,  tigmo_taxis, top_margin, stress, boldness,normal]
+labels = ['Frantic Swim', 'Freezing', 'Tigmo Taxis', 'Top margin', 'Stress Index','boldness','normal']
 x_label = 'Days'
 y_label = 'Duration (s)'
 
 # Call the plotting function
 plot_individual_values(data, labels, x_label, y_label)
+
+
+
+stress_score_matrix = (stress-boldness)/(stress+boldness)
+stress_score_matrix[-1,0] = stress_score_matrix[-1,1]
+median = np.median(stress_score_matrix, axis=1)
+confidence_interval = stats.t.interval(0.95, len(stress_score_matrix) - 1, 
+                                       loc=np.mean(stress_score_matrix, axis=1), 
+                                       scale=stats.sem(stress_score_matrix, axis=1))
+
+plt.figure(figsize=(10, 6))
+
+# assuming your x-axis is just a range from 0 to the length of your median
+x = np.arange(len(median))
+
+# plotting the median line
+plt.plot(x, median, color='blue', label='Median')
+
+# filling the confidence interval
+plt.fill_between(x, confidence_interval[0], confidence_interval[1], color='blue', alpha=0.2)
+
+plt.axhline(0, color='red', linestyle='--')  # Add a horizontal line at y=0
+
+
+plt.ylim([-1, 1])  # setting y limits
+plt.legend(loc='best')
+
+plt.show()
