@@ -107,6 +107,24 @@ class EthovisionDataProcessor:
 
         self.subject_df['frantic_swim'] = self.subject_df.speed_cmPs > speed_threshold
 
+    def set_stress_status(self):
+        """
+        Set the stress status of the subject by calculating the stress index. The stress index is calculated
+        as the logical OR operation ('any' in pandas) across the 'tigmo_taxis', 'frantic_swim', and 'freezing' columns.
+        This method should only be called after the 'set_frantic_status' method has been called.
+
+        The result is stored in a new column in the DataFrame named 'stress_index'.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        self.subject_df['stress_index'] =  self.subject_df[['tigmo_taxis','frantic_swim', 'freezing']].any(axis=1)
+
+
+
     def compute_zones(self):
         """
         Calculates the boolean values for each zone (left, right, bottom, top) and
@@ -165,7 +183,7 @@ class EthovisionDataProcessor:
         and either in_left_margin or in_right_margin is True. This column represents a direct measure
         of tigmotaxis in the fish.
         """
-        self.subject_df['tigmo_taxis'] = (self.subject_df['speed_vert_cmPs'].abs() > self.speed_threshold) & (self.subject_df['in_left_margin'] | self.subject_df['in_right_margin'])
+        self.subject_df['tigmo_taxis'] = (self.subject_df['speed_vert_cmPs'].abs() > self.speed_threshold) & (self.subject_df['in_left_margin'] | self.subject_df['in_right_margin']) 
 
     def true_freezing(self):
         """
