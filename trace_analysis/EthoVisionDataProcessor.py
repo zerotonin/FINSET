@@ -107,6 +107,22 @@ class EthovisionDataProcessor:
 
         self.subject_df['frantic_swim'] = self.subject_df.speed_cmPs > speed_threshold
 
+    def set_bold_status(self):
+        """
+        Set the boldness status of the subject by calculating the boldness index. The boldness index is calculated
+        as the logical AND operation between the 'in_top_margin' and the logical NOT operation of 'frantic_swim' column.
+        This method should only be called after the 'set_frantic_status' method has been called.
+
+        The result is stored in a new column in the DataFrame named 'boldness_index'.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        self.subject_df['boldness_index'] = ( self.subject_df.in_top_margin) & ~(self.subject_df.frantic_swim)
+
     def set_stress_status(self):
         """
         Set the stress status of the subject by calculating the stress index. The stress index is calculated
