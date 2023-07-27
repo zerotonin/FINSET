@@ -311,7 +311,8 @@ class EthovisionDataProcessor:
             bout_metrics (dict): A dictionary containing median bout duration and fraction for each bout type.
         """
         bout_metrics = {}
-        for bout_type in ['activity', 'freezing', 'in_top_margin', 'in_bottom_margin', 'tigmo_taxis','frantic','stress','boldness']:
+        for bout_type in ['activity', 'freezing', 'in_top_margin', 'in_bottom_margin',
+                          'tigmo_taxis','frantic','stress','boldness']:
             median_duration, fraction = self.calculate_bout_metrics(day_data, bout_type, total_time)
             bout_metrics[f'Median_{bout_type}_duration_s'] = median_duration
             bout_metrics[f'{bout_type}_fraction'] = fraction
@@ -476,12 +477,12 @@ class EthovisionDataProcessor:
             median_stress_durations.append(bout_metrics['Median_stress_duration_s'])
             stress_duration_s.append(bout_metrics['stress_duration_s'])
             stress_fractions.append(bout_metrics['stress_fraction'])
-            median_bold_durations.append(bout_metrics['Median_bold_duration_s'])
-            bold_duration_s.append(bout_metrics['bold_duration_s'])
-            bold_fractions.append(bout_metrics['bold_fraction'])
+            median_bold_durations.append(bout_metrics['Median_boldness_duration_s'])
+            bold_duration_s.append(bout_metrics['boldness_duration_s'])
+            bold_fractions.append(bout_metrics['boldness_fraction'])
             
             # Stress Score
-            stress_score.append((bout_metrics['stress_fraction']-bout_metrics['bold_fraction'])/(bout_metrics['stress_fraction']+bout_metrics['bold_fraction']))
+            stress_score.append((bout_metrics['stress_fraction']-bout_metrics['boldness_fraction'])/(bout_metrics['stress_fraction']+bout_metrics['boldness_fraction']))
             
             # Latency and transitions
             latency_and_transitions = self.calculate_latency_and_transitions_for_day(day_data)
@@ -512,7 +513,10 @@ class EthovisionDataProcessor:
             'Median_tigmotaxis_duration_s': median_tigmotaxis_durations,
             'tigmotaxis_duration_s': tigmotaxis_duration_s,
             'Tigmotaxis_fraction': tigmotaxis_fractions,
-            'Median__duration_s': median_stress_durations,
+            'Median_frantic_duration_s': median_frantic_durations,
+            'frantic_duration_s': frantic_duration_s,
+            'frantic_fraction': frantic_fractions,
+            'Median_stress_duration_s': median_stress_durations,
             'stress_duration_s': stress_duration_s,
             'stress_fraction': stress_fractions,
             'Median_boldness_duration_s': median_bold_durations,
