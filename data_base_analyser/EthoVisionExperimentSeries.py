@@ -90,7 +90,7 @@ class EthoVisionExperimentSeries:
             subject_dir_str (str): The subject directory string for saving the figures.
         """
         names = ['bout_metrics_01', 'velocities_distance', 'zones', 'spatial_histogram','stress_score']
-        for i in range(fig_handles):
+        for i in range(len(fig_handles)):
             self.save_figure(fig_handles[i], os.path.join(subject_dir_str, f'{names[i]}.svg'))
 
     def process_and_save(self):
