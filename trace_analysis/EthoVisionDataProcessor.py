@@ -17,9 +17,9 @@ class EthovisionDataProcessor:
     left_margin (float): The boundary value for the left margin. Defaults to 2.0.
     right_margin (float): The boundary value for the right margin. Defaults to 18.5.
     bottom_margin (float): The boundary value for the bottom margin. Defaults to 2.5.
-    top_margin (float): The boundary value for the top margin. Defaults to 10.67.
+    top_margin (float): The boundary value for the top margin. Defaults to 18.5.
     """
-    def __init__(self, subject_df, speed_threshold=0.5, fps=25, margins = (2.0,18.5,2.5,10.67)):
+    def __init__(self, subject_df, speed_threshold=0.5, fps=25, margins = (2.0,18.5,2.5,18.5)):
         self.subject_df = subject_df
         self.speed_threshold = speed_threshold
         self.fps = fps
@@ -311,7 +311,7 @@ class EthovisionDataProcessor:
             bout_metrics (dict): A dictionary containing median bout duration and fraction for each bout type.
         """
         bout_metrics = {}
-        for bout_type in ['activity', 'freezing', 'in_top_margin', 'in_bottom_margin', 'tigmo_taxis']:
+        for bout_type in ['activity', 'freezing', 'in_top_margin', 'in_bottom_margin', 'tigmo_taxis','stress_index','boldness_index']:
             median_duration, fraction = self.calculate_bout_metrics(day_data, bout_type, total_time)
             bout_metrics[f'Median_{bout_type}_duration_s'] = median_duration
             bout_metrics[f'{bout_type}_fraction'] = fraction
@@ -394,7 +394,9 @@ class EthovisionDataProcessor:
         self.add_day_number()
         self.calculate_speed()
         self.set_activity_status()
-        self.set_frantic_status
+        self.set_frantic_status()
+        self.set_stress_status()
+        self.set_activity_status()
         self.compute_zones()
         self.map_zones_to_integers()
         self.side_tigmotaxis()
@@ -405,29 +407,39 @@ class EthovisionDataProcessor:
 
         median_activity_durations   = list()
         activity_fractions          = list()
-        activity_duration_s        = list()
+        activity_duration_s         = list()
 
         median_freezing_durations   = list()
         freezing_fractions          = list()
-        freezing_duration_s        = list()
+        freezing_duration_s         = list()
 
         median_top_durations        = list()
         top_fractions               = list()
-        top_duration_s             = list()
+        top_duration_s              = list()
 
         median_bottom_durations     = list()
         bottom_fractions            = list()
-        bottom_duration_s          = list()
+        bottom_duration_s           = list()
 
         median_tigmotaxis_durations = list()
         tigmotaxis_fractions        = list()
-        tigmotaxis_duration_s      = list()
+        tigmotaxis_duration_s       = list()
+
+        median_stress_durations     = list()
+        stress_fractions            = list()
+        stress_duration_s           = list()
+
+        median_bold_durations       = list()
+        bold_fractions              = list()
+        bold_duration_s             = list()
 
         tigmotaxis_transition_freq  = list()
         time_to_top                 = list()
         top_zone_entries            = list()
         distance_travelled          = list()
         histograms                  = list()
+        stress_score                = list()
+        
 
         for day in self.subject_df.Day_number.unique():
             day_data = self.subject_df.loc[self.subject_df.Day_number == day]
@@ -454,7 +466,16 @@ class EthovisionDataProcessor:
             median_tigmotaxis_durations.append(bout_metrics['Median_tigmo_taxis_duration_s'])
             tigmotaxis_duration_s.append(bout_metrics['tigmo_taxis_duration_s'])
             tigmotaxis_fractions.append(bout_metrics['tigmo_taxis_fraction'])
-
+            median_stress_durations.append(bout_metrics['Median_stress_duration_s'])
+            stress_duration_s.append(bout_metrics['stress_duration_s'])
+            stress_fractions.append(bout_metrics['stress_fraction'])
+            median_bold_durations.append(bout_metrics['Median_bold_duration_s'])
+            bold_duration_s.append(bout_metrics['bold_duration_s'])
+            bold_fractions.append(bout_metrics['bold_fraction'])
+            
+            # Stress Score
+            stress_score.append((bout_metrics['stress_fraction']-bout_metrics['bold_fraction'])/(bout_metrics['stress_fraction']+bout_metrics['bold_fraction']))
+            
             # Latency and transitions
             latency_and_transitions = self.calculate_latency_and_transitions_for_day(day_data)
             time_to_top.append(latency_and_transitions['Latency_to_top_s'])
@@ -484,6 +505,13 @@ class EthovisionDataProcessor:
             'Median_tigmotaxis_duration_s': median_tigmotaxis_durations,
             'tigmotaxis_duration_s': tigmotaxis_duration_s,
             'Tigmotaxis_fraction': tigmotaxis_fractions,
+            'Median__duration_s': median_stress_durations,
+            'stress_duration_s': stress_duration_s,
+            'stress_fraction': stress_fractions,
+            'Median_boldness_duration_s': median_bold_durations,
+            'boldness_duration_s': bold_duration_s,
+            'boldness_fraction': bold_fractions,
+            'stress_score': stress_score,
             'Tigmotaxis_transition_freq': tigmotaxis_transition_freq,
             'Latency_to_top_s': time_to_top,
             'top_zone_entries': top_zone_entries,
