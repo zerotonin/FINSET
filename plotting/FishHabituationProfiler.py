@@ -17,11 +17,11 @@ class FishHabituationProfiler:
         habituation_direction (list of bool): A list of booleans indicating the direction of the habituation arrow.
     """
      
-    def __init__(self,df,measures = ['Top_fraction', 'Bottom_fraction', 'Tigmotaxis_transition_freq', 'Distance_travelled_cm'],
-                                    limits = [0.4,0.1,0.2,4500], 
-                                    y_labels=['In top zone, 0->1', 'In bottom zone, 0->1', 'Tigmotaxis frequency, Hz', 'Distance travelled, cm'], 
-                                    y_limits = [(0,1),(0,1),(0,1),(0,10000)],
-                                    habituation_direction = [False,True,True,True]):
+    def __init__(self,df,measures = ['stress_fraction', 'Freezing_fraction', 'Tigmotaxis_fraction', 'boldness_fraction'],
+                                    limits = [0.2,0.1,0.1,0.2], 
+                                    y_labels=['stress, 0->1', 'freezing, 0->1', 'tigmotaxis, 0->1', 'boldness, 0->1'], 
+                                    y_limits = [(0,1),(0,1),(0,1),(0,1)],
+                                    habituation_direction = [True,True,True,False]):
         self.df = df
         self.measures = measures
         self.limits = limits
