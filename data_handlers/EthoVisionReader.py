@@ -27,7 +27,9 @@ class EthoVisionReader:
         """
         self.filename = filename
         self.excel_data = self.read_file()
-        
+        self.accepted_column_heads = ['Trial time', 'Recording time', 'X center', 'Y center', 
+                                      'Area', 'Areachange', 'Elongation', 'Distance moved', 
+                                      'Velocity']
         self.correction_mode = correction_mode
         self.correction_factor = correction_factor
 
@@ -91,6 +93,7 @@ class EthoVisionReader:
         column_heads = sheet_data.iloc[index,:].to_list()
         column_units = sheet_data.iloc[index+1,:].to_list()
         col_combi = list(zip(column_heads, column_units))
+        col_combi = [x for x in col_combi if x[0] in self.accepted_column_heads]
         column_names = [f'{x[0]}_{x[1]}'.replace(' ','_') for x in col_combi]
 
         return pd.DataFrame(sheet_data.iloc[index+2::,:].to_numpy(), columns=column_names)

@@ -72,15 +72,15 @@ for root, dirs, files in os.walk(parent_dir):
             file_positions.append(file_position)
 
 trajectory_data = list()
-fish_counter = 0
-frantic = np.full((22, 64), np.nan)
-freezing = np.full((22, 64), np.nan)
-bottom = np.full((22, 64), np.nan)
-tigmo_taxis = np.full((22, 64), np.nan)
-top_margin = np.full((22, 64), np.nan)
-stress = np.full((22, 64), np.nan)
-boldness = np.full((22, 64), np.nan)
-normal = np.full((22, 64), np.nan)
+fish_counter    = 0
+frantic         = np.full((22, 64), np.nan)
+freezing        = np.full((22, 64), np.nan)
+bottom          = np.full((22, 64), np.nan)
+tigmo_taxis     = np.full((22, 64), np.nan)
+top_margin      = np.full((22, 64), np.nan)
+stress          = np.full((22, 64), np.nan)
+boldness        = np.full((22, 64), np.nan)
+normal          = np.full((22, 64), np.nan)
 
 bottom_threshold  = 2.5 # cm    
 side_threshold    = 4.0 # which is half a body length of 4 cm long adult zebrafish
