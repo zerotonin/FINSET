@@ -19,17 +19,18 @@ tag = 'methApplication2023'
 tag = 'habituation2023'
 parent_directory = '/home/bgeurten/ethoVision_database/'
 
+#%%
 # Compile data daywise
 etho_vision_analysis = EthoVisionExperimentSeries(tag, parent_directory)
 etho_vision_analysis.process_and_save()
-
+#%%
 db_position = f'{parent_directory}{tag}_daywise_analysis.csv'
 df = pd.read_csv(db_position)
 
 dwa= DaywiseAnalysis(df,parent_directory)
-#dwa.create_spatial_histograms()
-#dwa.create_box_strip_plots()
-#plt.show()
+dwa.create_spatial_histograms()
+dwa.create_box_strip_plots()
+plt.show()
 
 fhp = FishHabituationProfiler(df)
 figs, fishIDs = fhp.check_habituation()
