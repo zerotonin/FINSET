@@ -17,7 +17,7 @@ def combine_databases(filepath):
     c1 = conn1.cursor()
 
     # Create a new database and a cursor for it
-    conn_new = sqlite3.connect(f'{filepath}combined_database.db')
+    conn_new = sqlite3.connect(f'{filepath}combined_ethovision_data.db')
     c_new = conn_new.cursor()
 
     # Create a new table in the new database with the same structure as the 'ethovision_data' table
