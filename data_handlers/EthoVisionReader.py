@@ -94,9 +94,10 @@ class EthoVisionReader:
         column_units = sheet_data.iloc[index+1,:].to_list()
         col_combi = list(zip(column_heads, column_units))
         col_combi = [x for x in col_combi if x[0] in self.accepted_column_heads]
+        col_combi_indices = [i for i, x in enumerate(col_combi) if x[0] in self.accepted_column_heads]
         column_names = [f'{x[0]}_{x[1]}'.replace(' ','_') for x in col_combi]
 
-        return pd.DataFrame(sheet_data.iloc[index+2::,:].to_numpy(), columns=column_names)
+        return pd.DataFrame(sheet_data.iloc[index+2::,col_combi_indices].to_numpy(), columns=column_names)
 
     def get_meta_data(self, sheet_data, df):
         """
