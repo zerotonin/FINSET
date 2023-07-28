@@ -78,13 +78,14 @@ def create_database(db_name):
 # Specify the folder to search for .xlsx files
 #folder = "/media/bgeurten/HSMovieKrissy/Hab_rawData"
 #folder = "/home/bgeurten/METH/raw_data/"
-folder = '/media/bgeurten/Alex_stuff/master/rehab/'
+#folder = '/media/bgeurten/Alex_stuff/master/rehab/'
+folder = '/media/bgeurten/Alex_stuff/master/METH/raw/'
 
 # Get a list of all .xlsx files in the folder and its subdirectories
 xlsx_files = get_all_xlsx_files(folder)
 
 # Create a SQLite database and connect to it
-db_name = "/home/bgeurten/ethoVision_database/rehabituation_2023.db"
+db_name = "/home/bgeurten/ethoVision_database/meth_administration_2023.db"
 db_connection = create_database(db_name)
 
 # Read all EthoVision Excel files and store the data in the SQLite database
