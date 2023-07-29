@@ -41,7 +41,7 @@ class EthovisionDataProcessor:
         unique_dates = self.subject_df['Start_time'].dt.normalize().drop_duplicates().sort_values()
 
         # Create a dictionary mapping unique dates to their day number
-        day_number_mapping = {date: i for i, date in enumerate(unique_dates)}
+        day_number_mapping = {date: i+1 for i, date in enumerate(unique_dates)}
 
         # Add a new 'Day_number' column based on the mapping
         self.subject_df['Day_number'] = self.subject_df['Start_time'].dt.normalize().map(day_number_mapping)
