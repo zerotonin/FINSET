@@ -133,9 +133,9 @@ plot_individual_values(data, labels, x_label, y_label)
 
 stress_score_matrix = (stress-boldness)/(stress+boldness)
 stress_score_matrix[-1,0] = stress_score_matrix[-1,1]
-median = np.median(stress_score_matrix, axis=1)
+median = np.nanmedian(stress_score_matrix, axis=1)
 confidence_interval = stats.t.interval(0.95, len(stress_score_matrix) - 1, 
-                                       loc=np.mean(stress_score_matrix, axis=1), 
+                                       loc=np.nanmean(stress_score_matrix, axis=1), 
                                        scale=stats.sem(stress_score_matrix, axis=1))
 
 plt.figure(figsize=(10, 6))
