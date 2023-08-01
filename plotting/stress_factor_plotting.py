@@ -56,7 +56,8 @@ def plot_individual_values(data, labels, x_label, y_label):
     plt.show()
 
 
-parent_dir = '/home/bgeurten/ethoVision_database/'
+# parent_dir = '/home/bgeurten/ethoVision_database/' # Bart
+parent_dir = "D:\\uni\\Biologie\\Master\\Masterarbeit_NZ\\analyses\\habituation_data\\python_analyses\\ethoVision_database" # Alex
 file_name = 'trajectory_data.csv'
 
 file_positions = []
