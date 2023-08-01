@@ -15,21 +15,20 @@ import matplotlib.cm as cm
 
 #[print(x.shape) for x in histograms]
 # Usage
-tag = 'methApplication2023'
-tag = 'habituation2023'
+tag = 'combined'
 parent_directory = '/home/bgeurten/ethoVision_database/'
 
 #%%
 # Compile data daywise
-#etho_vision_analysis = EthoVisionExperimentSeries(tag, parent_directory)
-#etho_vision_analysis.process_and_save()
+etho_vision_analysis = EthoVisionExperimentSeries(tag, parent_directory)
+etho_vision_analysis.process_and_save()
 #%%
 db_position = f'{parent_directory}{tag}_daywise_analysis.csv'
 df = pd.read_csv(db_position)
 
 dwa= DaywiseAnalysis(df,parent_directory)
-#dwa.create_spatial_histograms()
-#dwa.create_box_strip_plots()
+dwa.create_spatial_histograms()
+dwa.create_box_strip_plots()
 plt.show()
 
 fhp = FishHabituationProfiler(df)
@@ -39,4 +38,3 @@ figure_directory = '/home/bgeurten/ethoVision_database/habituation_figs/'
 
 for i in range(len(figs)):
     figs[i].savefig(f'{figure_directory}/{fishIDs[i]}.svg')
-

@@ -27,8 +27,8 @@ def combine_databases(filepath):
 
     # Attach the databases
     c_new.execute(f"ATTACH DATABASE '{filepath}habituation2023_ethovision_data.db' AS db1")
-    c_new.execute(f"ATTACH DATABASE '{filepath}rehabituation_2023.db' AS db2")
-    c_new.execute(f"ATTACH DATABASE '{filepath}meth_administration_2023.db' AS db3")
+    c_new.execute(f"ATTACH DATABASE '{filepath}rehabituation2023_ethovision_data.db' AS db2")
+    c_new.execute(f"ATTACH DATABASE '{filepath}meth2023_ethovision_data.db' AS db3")
 
     # Copy the data from the tables in the other databases into the table in the new database
     c_new.execute("INSERT INTO ethovision_data SELECT * FROM db1.ethovision_data")
