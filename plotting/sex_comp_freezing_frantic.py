@@ -102,8 +102,6 @@ plot_freezing(sum_rehab_df, 'Rehab')
 
 
 
-
-
 #statistics for specific phase and behaviors
 #still to add: stress fraction, stress score, median speed, thigmotaxis fraction, (latency to top)
 
@@ -118,20 +116,20 @@ _, p_value_frantic_male = shapiro(data_male['frantic_fraction'])
 _, p_value_freezing_female = shapiro(data_female['Freezing_fraction'])
 _, p_value_frantic_female = shapiro(data_female['frantic_fraction'])
 
-# Perform t-test for normally distributed data, and Wilcoxon signed-rank test for non-normally distributed data
+# Perform Mann-Whitney U test for non-normally distributed data
 if p_value_freezing_male > 0.05 and p_value_freezing_female > 0.05:
-    t_statistic_freezing, p_value_freezing = ttest_ind(data_male['Freezing_fraction'], data_female['Freezing_fraction'])
-    used_test_freezing = "t-test"
+    _, p_value_freezing = mannwhitneyu(data_male['Freezing_fraction'], data_female['Freezing_fraction'], alternative="two-sided")
+    used_test_freezing = "Mann-Whitney U test"
 else:
-    t_statistic_freezing, p_value_freezing = wilcoxon(data_male['Freezing_fraction'], data_female['Freezing_fraction'])
-    used_test_freezing = "Wilcoxon signed-rank test"
+    _, p_value_freezing = mannwhitneyu(data_male['Freezing_fraction'], data_female['Freezing_fraction'], alternative="two-sided")
+    used_test_freezing = "Mann-Whitney U test"
 if p_value_frantic_male > 0.05 and p_value_frantic_female > 0.05:
-    t_statistic_frantic, p_value_frantic = ttest_ind(data_male['frantic_fraction'], data_female['frantic_fraction'])
-    used_test_frantic = "t-test"
+    _, p_value_frantic = mannwhitneyu(data_male['frantic_fraction'], data_female['frantic_fraction'], alternative="two-sided")
+    used_test_frantic = "Mann-Whitney U test"
 else:
-    t_statistic_frantic, p_value_frantic = wilcoxon(data_male['frantic_fraction'], data_female['frantic_fraction'])
-    used_test_frantic = "Wilcoxon signed-rank test"
-    
+    _, p_value_frantic = mannwhitneyu(data_male['frantic_fraction'], data_female['frantic_fraction'], alternative="two-sided")
+    used_test_frantic = "Mann-Whitney U test"
+
 # Function to add significance stars
 def add_significance_stars(p_value):
     if p_value < 0.001:
@@ -143,7 +141,7 @@ def add_significance_stars(p_value):
     else:
         return 'n.s.'
 
-#print test results
+# print test results
 print("Test results for Freezing:")
 print("Used Test:", used_test_freezing)
 print("P-value:", p_value_freezing, add_significance_stars(p_value_freezing))
@@ -151,6 +149,7 @@ print("P-value:", p_value_freezing, add_significance_stars(p_value_freezing))
 print("\nTest results for Frantic:")
 print("Used Test:", used_test_frantic)
 print("P-value:", p_value_frantic, add_significance_stars(p_value_frantic))
+
 
 
 
