@@ -64,63 +64,48 @@ sum_rehab_df = rehab_df.groupby(['ID', 'Tank_number', 'Sex']).agg({
 
 
 
-
-# plotting of all datapoints for either panic phase, stress phase, habituated phase or rehabituated phase
-fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(12, 6))
+# plotting all values for certain behavior inclusive outliers
+plt.figure(figsize=(6, 6))
 sns.set(style="whitegrid")
 
-# Subplot 1: Freezing
-sns.boxplot(x="Sex", y="Freezing_fraction", data=sum_stress_df, ax=axes[0]) # data = dataframe of interest
-axes[0].set_title('Freezing_fraction')
-axes[0].set_xlabel('Sex')
-axes[0].set_ylabel('Freezing_fraction')
-
-# Subplot 2: Frantic
-sns.boxplot(x="Sex", y="frantic_fraction", data=sum_stress_df, ax=axes[1])
-axes[1].set_title('frantic_fraction')
-axes[1].set_xlabel('Sex')
-axes[1].set_ylabel('frantic_fraction')
+sns.boxplot(x="Sex", y="Freezing_fraction", data=sum_stress_df)
+plt.title('Freezing fraction stress phase')
+plt.xlabel('Sex')
+plt.ylabel('Freezing_fraction')
 
 plt.tight_layout()
 plt.show()
 
 
-# Plotting mean freezing and frantic fractions for each dataframe
-def plot_fractions(dataframe, title):
-    plt.figure(figsize=(10, 6))
+#mean plotting of each phase for a certain behavior
+def plot_freezing(dataframe, title):
+    plt.figure(figsize=(6, 6))
     
-    # Calculate the mean freezing and frantic fractions for each sex
-    mean_data = dataframe.groupby('Sex').mean()
+    # Calculate the mean freezing fraction for each sex
+    mean_data = dataframe.groupby('Sex')['Freezing_fraction'].mean()
     
     # Plot mean freezing fraction
-    plt.subplot(1, 2, 1)
-    sns.barplot(x=mean_data.index, y='Freezing_fraction', data=mean_data.reset_index(), errorbar=None)
+    sns.barplot(x=mean_data.index, y=mean_data.values, palette='Set2')
     plt.xlabel('Sex')
     plt.ylabel('Mean Freezing Fraction')
-    plt.title(f'{title} - Mean Freezing Fraction')
-    
-    # Plot mean frantic fraction
-    plt.subplot(1, 2, 2)
-    sns.barplot(x=mean_data.index, y='frantic_fraction', data=mean_data.reset_index(), errorbar=None)
-    plt.xlabel('Sex')
-    plt.ylabel('Mean Frantic Fraction')
-    plt.title(f'{title} - Mean Frantic Fraction')
+    plt.title(f'{title} Phase - Mean Freezing Fraction')
     
     plt.tight_layout()
     plt.show()
 
-# Call the plotting function for each dataframe
-plot_fractions(sum_panic_df, 'Panic')
-plot_fractions(sum_stress_df, 'Stress')
-plot_fractions(sum_hab_df, 'Habituation')
-plot_fractions(sum_rehab_df, 'Rehab')
+# Call the plotting function for each phase
+plot_freezing(sum_panic_df, 'Panic')
+plot_freezing(sum_stress_df, 'Stress')
+plot_freezing(sum_hab_df, 'Habituation')
+plot_freezing(sum_rehab_df, 'Rehab')
 
 
 
 
 
 
-#statistics for specific phase
+#statistics for specific phase and behaviors
+#still to add: stress fraction, stress score, median speed, thigmotaxis fraction, (latency to top)
 
 # Separate data for males and females, select dataframe of interest in data_male & data_female. Here: stress phase
 data_male = sum_stress_df[sum_stress_df['Sex'] == 'M']
