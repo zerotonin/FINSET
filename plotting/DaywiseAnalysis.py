@@ -370,7 +370,7 @@ class DaywiseAnalysis:
             'Distance_travelled_cm','stress_fraction','stress_duration_s' ,
             'Median_stress_duration_s' , 'frantic_fraction', 'frantic_duration_s', 
             'Median_frantic_duration_s','Median_boldness_duration_s','boldness_duration_s',
-            'boldness_duration_s', 'stress_score'
+            'boldness_duration_s', 'boldness_fraction', 'stress_score'
         ]
         figure_handles = list()
         for topic in topics:
