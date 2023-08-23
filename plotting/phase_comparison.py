@@ -14,7 +14,7 @@ import scipy.ndimage
 from matplotlib.colors import LogNorm
 import matplotlib.cm as cm
 from scipy.stats import ttest_rel, wilcoxon, shapiro, mannwhitneyu, ttest_ind
-
+import scipy.stats as stats
 
 #[print(x.shape) for x in histograms]
 # Usage
@@ -30,47 +30,109 @@ columns = df.columns
 mask_day_1_to_2 = (df['Day_number'] >= 1) & (df['Day_number'] <= 2)
 mask_day_3_to_8 = (df['Day_number'] >= 3) & (df['Day_number'] <= 8)
 mask_day_9_to_22 = (df['Day_number'] >= 9) & (df['Day_number'] <= 22)
-mask_day_23_to_27 = (df['Day_number'] >= 23) & (df['Day_number'] <= 27)
+mask_day_23_to_27 = (df['Day_number'] >= 25) & (df['Day_number'] <= 27)
 
     
     # Create new DataFrames for each day range with needed columns
-panic_df = df.loc[mask_day_1_to_2, ['Sex', 'Tank_number', 'ID', 'stress_score', 'stress_fraction', 'boldness_fraction']]
-stress_df = df.loc[mask_day_3_to_8, ['Sex', 'Tank_number', 'ID', 'stress_score', 'stress_fraction', 'boldness_fraction']]
-hab_df = df.loc[mask_day_9_to_22, ['Sex', 'Tank_number', 'ID', 'stress_score', 'stress_fraction', 'boldness_fraction']]
-rehab_df = df.loc[mask_day_23_to_27, ['Sex', 'Tank_number', 'ID', 'stress_score', 'stress_fraction', 'boldness_fraction']]
-    
-# Calculate means for each behavioral state in the dataframes
-stress_means = stress_df[['stress_score', 'stress_fraction', 'boldness_fraction']].mean()
-hab_means = hab_df[['stress_score', 'stress_fraction', 'boldness_fraction']].mean()
-rehab_means = rehab_df[['stress_score', 'stress_fraction', 'boldness_fraction']].mean()
+panic_df = df.loc[mask_day_1_to_2, ['Sex', 'Tank_number', 'ID', 'stress_score', 'stress_fraction', 'boldness_fraction', 'Median_speed_cmPs', 'Distance_travelled_cm', 'Freezing_fraction',
+                                    'Top_fraction', 'Bottom_fraction', 'Tigmotaxis_fraction', 'frantic_fraction']]
+stress_df = df.loc[mask_day_3_to_8, ['Sex', 'Tank_number', 'ID', 'stress_score', 'stress_fraction', 'boldness_fraction', 'Median_speed_cmPs', 'Distance_travelled_cm', 'Freezing_fraction',
+                                    'Top_fraction', 'Bottom_fraction', 'Tigmotaxis_fraction', 'frantic_fraction']]
+hab_df = df.loc[mask_day_9_to_22, ['Sex', 'Tank_number', 'ID', 'stress_score', 'stress_fraction', 'boldness_fraction', 'Median_speed_cmPs', 'Distance_travelled_cm', 'Freezing_fraction',
+                                    'Top_fraction', 'Bottom_fraction', 'Tigmotaxis_fraction', 'frantic_fraction']]
+rehab_df = df.loc[mask_day_23_to_27, ['Sex', 'Tank_number', 'ID', 'stress_score', 'stress_fraction', 'boldness_fraction', 'Median_speed_cmPs', 'Distance_travelled_cm', 'Freezing_fraction',
+                                    'Top_fraction', 'Bottom_fraction', 'Tigmotaxis_fraction', 'frantic_fraction']]
 
 
-# Plotting
-behavioral_states = ['stress_score', 'stress_fraction', 'boldness_fraction']
+# Define the columns to select in your DataFrames
+columns_to_select = ['stress_score', 'stress_fraction', 'boldness_fraction', 'Median_speed_cmPs', 'Distance_travelled_cm', 'Freezing_fraction',
+                     'Top_fraction', 'Bottom_fraction', 'Tigmotaxis_fraction', 'frantic_fraction']
+
+# Define the labels for different states
 state_labels = ['Stress', 'Habituated', 'Rehab']
+
+# Define the colors for different groups
 group_colors = {
-    'stress': 'pink',
-    'habituated': 'lightsteelblue',
-    'rehabituated': 'royalblue'
+    'stress phase': 'pink',
+    'habituation phase': 'lightsteelblue',
+    'rehabituation phase': 'royalblue'
 }
 
-# Create a new figure for each behavioral state
-for i, state in enumerate(behavioral_states):
-    plt.figure(figsize=(6, 4))  # Adjust the figsize as needed
-    plt.title(f'Mean {state}')
-    
-    means = [stress_means[state], hab_means[state], rehab_means[state]]
-    
-    bars = plt.bar(state_labels, means, color=[group_colors['stress'], group_colors['habituated'], group_colors['rehabituated']])
-    plt.ylabel(state)
-    
-    y_max = max(means)
-    y_min = min(0, min(means))  # Ensure y-axis starts from 0 or the smallest value, whichever is lower
-    y_margin = 0.2 * (y_max - y_min)  # Additional margin as a percentage of the data range
-    plt.ylim(y_min, y_max + y_margin)
-    
-    plt.tight_layout()
-    plt.show()
 
+def plot_behavioral_state_comparison(stress_df, hab_df, rehab_df, state_labels, group_colors, save_directory):
+    behavioral_states = ['stress_score', 'stress_fraction', 'boldness_fraction', 'Median_speed_cmPs', 'Distance_travelled_cm', 'Freezing_fraction',
+                         'Top_fraction', 'Bottom_fraction', 'Tigmotaxis_fraction', 'frantic_fraction']
+    
+    for state in behavioral_states:
+        plt.figure(figsize=(10, 6))
+        plt.title(f'{state}')
+        
+        stress_data = stress_df[state]
+        hab_data = hab_df[state]
+        rehab_data = rehab_df[state]
+        
+        # Test for normality
+        _, stress_p_value = stats.shapiro(stress_data)
+        _, hab_p_value = stats.shapiro(hab_data)
+        _, rehab_p_value = stats.shapiro(rehab_data)
+        
+        test_used = ""
+        
+        if stress_p_value > 0.05 and hab_p_value > 0.05:
+            # All groups are normally distributed, use ANOVA
+            f_stat, p_value = stats.f_oneway(stress_data, hab_data)
+            test_used = "ANOVA"
+        else:
+            # At least one group is not normally distributed, use Kruskal-Wallis test
+            h_stat, p_value = stats.kruskal(stress_data, hab_data)
+            test_used = "Kruskal-Wallis"
+        
+        print(f"Behavioral state: {state}")
+        print(f"Test used: {test_used}")
+        print(f"P-value: {p_value}")
+        
+        if p_value < 0.05:
+            print("Reject null hypothesis: There is a significant difference.")
+        else:
+            print("Fail to reject null hypothesis: No significant difference.")
+        
+        data = pd.DataFrame({
+            'stress phase': stress_data,
+            'habituation phase': hab_data,
+            'rehabituation phase': rehab_data
+        })
+        
+        ax = sns.boxplot(data=data, palette=group_colors)
+        plt.ylabel(state)
+        # Add some additional space on the y-axis
+        ax.set_ylim(ax.get_ylim()[0] - 0.0, ax.get_ylim()[1] + 0.3)
+        plt.tight_layout()
+        
+         # Save the figure
+        save_path = os.path.join(save_directory, f'{state}_boxplot.png')
+        plt.savefig(save_path)
+        
+        plt.show()
+        
+        # Print significance stars
+        if p_value < 0.001:
+            significance = "***"
+        elif p_value < 0.01:
+            significance = "**"
+        elif p_value < 0.05:
+            significance = "*"
+        else:
+            significance = "ns"
+        
+        print(f"Significance: {significance}")
 
+save_directory = "D:\\uni\\Biologie\\Master\\Masterarbeit_NZ\\analyses\\python_analysis\\ethoVision_database\\phase_comparison"
+# Create new DataFrames for each day range with needed columns
+panic_df = df.loc[mask_day_1_to_2, columns_to_select]
+stress_df = df.loc[mask_day_3_to_8, columns_to_select]
+hab_df = df.loc[mask_day_9_to_22, columns_to_select]
+rehab_df = df.loc[mask_day_23_to_27, columns_to_select]
+
+# Call the function to plot the comparison
+plot_behavioral_state_comparison(stress_df, hab_df, rehab_df, state_labels, group_colors, save_directory)
 
