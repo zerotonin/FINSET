@@ -35,21 +35,29 @@ mask_day_23_to_27 = (df['Day_number'] >= 25) & (df['Day_number'] <= 27)
     
     # Create new DataFrames for each day range with needed columns
 panic_df = df.loc[mask_day_1_to_2, ['Sex', 'Tank_number', 'ID', 'stress_score', 'stress_fraction', 'boldness_fraction', 'Median_speed_cmPs', 'Distance_travelled_cm', 'Freezing_fraction',
-                                    'Top_fraction', 'Bottom_fraction', 'Tigmotaxis_fraction', 'frantic_fraction']]
+                                    'Top_fraction', 'Bottom_fraction', 'Tigmotaxis_fraction', 'frantic_fraction', 'Latency_to_top_s']]
 stress_df = df.loc[mask_day_3_to_8, ['Sex', 'Tank_number', 'ID', 'stress_score', 'stress_fraction', 'boldness_fraction', 'Median_speed_cmPs', 'Distance_travelled_cm', 'Freezing_fraction',
-                                    'Top_fraction', 'Bottom_fraction', 'Tigmotaxis_fraction', 'frantic_fraction']]
+                                    'Top_fraction', 'Bottom_fraction', 'Tigmotaxis_fraction', 'frantic_fraction', 'Latency_to_top_s']]
 hab_df = df.loc[mask_day_9_to_22, ['Sex', 'Tank_number', 'ID', 'stress_score', 'stress_fraction', 'boldness_fraction', 'Median_speed_cmPs', 'Distance_travelled_cm', 'Freezing_fraction',
-                                    'Top_fraction', 'Bottom_fraction', 'Tigmotaxis_fraction', 'frantic_fraction']]
+                                    'Top_fraction', 'Bottom_fraction', 'Tigmotaxis_fraction', 'frantic_fraction', 'Latency_to_top_s']]
 rehab_df = df.loc[mask_day_23_to_27, ['Sex', 'Tank_number', 'ID', 'stress_score', 'stress_fraction', 'boldness_fraction', 'Median_speed_cmPs', 'Distance_travelled_cm', 'Freezing_fraction',
-                                    'Top_fraction', 'Bottom_fraction', 'Tigmotaxis_fraction', 'frantic_fraction']]
+                                    'Top_fraction', 'Bottom_fraction', 'Tigmotaxis_fraction', 'frantic_fraction', 'Latency_to_top_s']]
+
+
+# Calculate means for panic phase
+panic_means = panic_df.drop('Sex', axis=1).groupby(['ID', 'Tank_number']).mean().reset_index()
+stress_means = stress_df.drop('Sex', axis=1).groupby(['ID', 'Tank_number']).mean().reset_index()
+hab_means = hab_df.drop('Sex', axis=1).groupby(['ID', 'Tank_number']).mean().reset_index()
+rehab_means = rehab_df.drop('Sex', axis=1).groupby(['ID', 'Tank_number']).mean().reset_index()
+
 
 
 # Define the columns to select in your DataFrames
 columns_to_select = ['stress_score', 'stress_fraction', 'boldness_fraction', 'Median_speed_cmPs', 'Distance_travelled_cm', 'Freezing_fraction',
-                     'Top_fraction', 'Bottom_fraction', 'Tigmotaxis_fraction', 'frantic_fraction']
+                     'Top_fraction', 'Bottom_fraction', 'Tigmotaxis_fraction', 'frantic_fraction', 'Latency_to_top_s']
 
-# Define the labels for different states
-state_labels = ['Stress', 'Habituated', 'Rehab']
+# Define the labels for different phases
+phase_labels = ['Stress', 'Habituated', 'Rehab']
 
 # Define the colors for different groups
 group_colors = {
@@ -59,32 +67,31 @@ group_colors = {
 }
 
 
-def plot_behavioral_state_comparison(stress_df, hab_df, rehab_df, state_labels, group_colors, save_directory):
-    behavioral_states = ['stress_score', 'stress_fraction', 'boldness_fraction', 'Median_speed_cmPs', 'Distance_travelled_cm', 'Freezing_fraction',
-                         'Top_fraction', 'Bottom_fraction', 'Tigmotaxis_fraction', 'frantic_fraction']
+def plot_behavioral_state_comparison(stress_means, hab_means, rehab_means, phase_labels, group_colors, save_directory):
+    behavioral_states = columns_to_select
     
     for state in behavioral_states:
         plt.figure(figsize=(10, 6))
         plt.title(f'{state}')
         
-        stress_data = stress_df[state]
-        hab_data = hab_df[state]
-        rehab_data = rehab_df[state]
+        stress_stat = stress_means[state]
+        hab_stat = hab_means[state]
+        rehab_stat = rehab_means[state]
         
         # Test for normality
-        _, stress_p_value = stats.shapiro(stress_data)
-        _, hab_p_value = stats.shapiro(hab_data)
-        _, rehab_p_value = stats.shapiro(rehab_data)
+        _, stress_p_value = stats.shapiro(stress_stat)
+        _, hab_p_value = stats.shapiro(hab_stat)
+        _, rehab_p_value = stats.shapiro(rehab_stat)
         
         test_used = ""
         
         if stress_p_value > 0.05 and hab_p_value > 0.05:
             # All groups are normally distributed, use ANOVA
-            f_stat, p_value = stats.f_oneway(stress_data, hab_data)
+            f_stat, p_value = stats.f_oneway(stress_stat, hab_stat)
             test_used = "ANOVA"
         else:
             # At least one group is not normally distributed, use Kruskal-Wallis test
-            h_stat, p_value = stats.kruskal(stress_data, hab_data)
+            h_stat, p_value = stats.kruskal(stress_stat, hab_stat)
             test_used = "Kruskal-Wallis"
         
         print(f"Behavioral state: {state}")
@@ -97,9 +104,9 @@ def plot_behavioral_state_comparison(stress_df, hab_df, rehab_df, state_labels, 
             print("Fail to reject null hypothesis: No significant difference.")
         
         data = pd.DataFrame({
-            'stress phase': stress_data,
-            'habituation phase': hab_data,
-            'rehabituation phase': rehab_data
+            'stress phase': stress_stat,
+            'habituation phase': hab_stat,
+            'rehabituation phase': rehab_stat
         })
         
         ax = sns.boxplot(data=data, palette=group_colors)
@@ -128,11 +135,11 @@ def plot_behavioral_state_comparison(stress_df, hab_df, rehab_df, state_labels, 
 
 save_directory = "D:\\uni\\Biologie\\Master\\Masterarbeit_NZ\\analyses\\python_analysis\\ethoVision_database\\phase_comparison"
 # Create new DataFrames for each day range with needed columns
-panic_df = df.loc[mask_day_1_to_2, columns_to_select]
-stress_df = df.loc[mask_day_3_to_8, columns_to_select]
-hab_df = df.loc[mask_day_9_to_22, columns_to_select]
-rehab_df = df.loc[mask_day_23_to_27, columns_to_select]
+panic_data = df.loc[mask_day_1_to_2, columns_to_select]
+stress_data = df.loc[mask_day_3_to_8, columns_to_select]
+hab_data= df.loc[mask_day_9_to_22, columns_to_select]
+rehab_data = df.loc[mask_day_23_to_27, columns_to_select]
 
 # Call the function to plot the comparison
-plot_behavioral_state_comparison(stress_df, hab_df, rehab_df, state_labels, group_colors, save_directory)
+plot_behavioral_state_comparison(stress_means, hab_means, rehab_means, phase_labels, group_colors, save_directory)
 
