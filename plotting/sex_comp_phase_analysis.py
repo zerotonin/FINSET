@@ -32,11 +32,12 @@ mask_day_3_to_8 = (df['Day_number'] >= 3) & (df['Day_number'] <= 8)
 mask_day_9_to_22 = (df['Day_number'] >= 9) & (df['Day_number'] <= 22)
 mask_day_23_to_27 = (df['Day_number'] >= 23) & (df['Day_number'] <= 27)
 
+
 def analyze_phase_behavior(df, mask, behavior_column, phase_name, save_figs):
     phase_df = df.loc[mask, ['Sex', 'Tank_number', 'ID', behavior_column]]
-    
-    data_male = phase_df[phase_df['Sex'] == 'M']
-    data_female = phase_df[phase_df['Sex'] == 'F']
+    grouped_phase_df = phase_df.groupby(['ID', 'Tank_number', 'Sex']).mean().reset_index()
+    data_male = grouped_phase_df[grouped_phase_df['Sex'] == 'M']
+    data_female = grouped_phase_df[grouped_phase_df['Sex'] == 'F']
 
     calculate_test_and_print_results(data_male, data_female, behavior_column)
 
@@ -44,7 +45,7 @@ def analyze_phase_behavior(df, mask, behavior_column, phase_name, save_figs):
     sns.set(style="whitegrid")
     colors = {"M": "lightsteelblue", "F": "pink"} 
     sns.boxplot(x="Sex", y=behavior_column, data=phase_df, palette = colors)
-    plt.title(f'{phase_name} Phase - {behavior_column}')
+    plt.title(f'{behavior_column} - {phase_name}')
     plt.xlabel('Sex')
     plt.ylabel(behavior_column)
     
@@ -54,7 +55,7 @@ def analyze_phase_behavior(df, mask, behavior_column, phase_name, save_figs):
     plt.ylim(ymin - additional_space, ymax + additional_space)
      
     plt.tight_layout()
-    save_path = os.path.join(save_figs, f'{phase_name}_{behavior_column}_boxplot.png')
+    save_path = os.path.join(save_figs, f'{behavior_column}_{phase_name}_boxplot.png')
     plt.savefig(save_path)
     plt.show()
 
@@ -78,10 +79,10 @@ def calculate_test_and_print_results(data_male, data_female, behavior_column):
             return '*'
         else:
             return 'n.s.'
-
+    rounded_p_value = round(p_value, 4)
     print("Test results for", behavior_column)
     print("Used Test:", used_test)
-    print("P-value:", p_value, add_significance_stars(p_value))
+    print("P-value:", rounded_p_value, add_significance_stars(p_value))
     
 save_figs = "D:\\uni\\Biologie\\Master\\Masterarbeit_NZ\\analyses\\python_analysis\\ethoVision_database\\sex_comparisson_figures\\sex_comp_means"    
     
