@@ -14,7 +14,7 @@ import scipy.ndimage
 from matplotlib.colors import LogNorm
 import matplotlib.cm as cm
 from scipy.stats import ttest_rel, wilcoxon, shapiro, mannwhitneyu, ttest_ind
-
+import scipy.stats as stats
 
 #[print(x.shape) for x in histograms]
 # Usage
@@ -31,6 +31,8 @@ mask_day_1_to_2 = (df['Day_number'] >= 1) & (df['Day_number'] <= 2)
 mask_day_3_to_8 = (df['Day_number'] >= 3) & (df['Day_number'] <= 8)
 mask_day_9_to_22 = (df['Day_number'] >= 9) & (df['Day_number'] <= 22)
 mask_day_23_to_27 = (df['Day_number'] >= 23) & (df['Day_number'] <= 27)
+
+
 
 
 def analyze_phase_behavior(df, mask, behavior_column, phase_name, save_figs):
@@ -64,8 +66,8 @@ def calculate_test_and_print_results(data_male, data_female, behavior_column):
     _, p_value_female = shapiro(data_female[behavior_column])
 
     if p_value_male > 0.05 and p_value_female > 0.05:
-        _, p_value = mannwhitneyu(data_male[behavior_column], data_female[behavior_column], alternative="two-sided")
-        used_test = "Mann-Whitney U test"
+        _, p_value = ttest_rel(data_male[behavior_column], data_female[behavior_column])
+        used_test = "Paired t-test"
     else:
         _, p_value = mannwhitneyu(data_male[behavior_column], data_female[behavior_column], alternative="two-sided")
         used_test = "Mann-Whitney U test"
