@@ -30,9 +30,7 @@ columns = df.columns
 mask_day_1_to_2 = (df['Day_number'] >= 1) & (df['Day_number'] <= 2)
 mask_day_3_to_8 = (df['Day_number'] >= 3) & (df['Day_number'] <= 8)
 mask_day_9_to_22 = (df['Day_number'] >= 9) & (df['Day_number'] <= 22)
-mask_day_23_to_27 = (df['Day_number'] >= 23) & (df['Day_number'] <= 27)
-
-
+mask_day_25_to_27 = (df['Day_number'] >= 25) & (df['Day_number'] <= 27)
 
 
 def analyze_phase_behavior(df, mask, behavior_column, phase_name, save_figs):
@@ -83,13 +81,13 @@ def calculate_test_and_print_results(data_male, data_female, behavior_column):
             return 'n.s.'
     rounded_p_value = round(p_value, 4)
     print("Test results for", behavior_column)
-    print("Used Test:", used_test)
+    print("Used Test:", used_test) 
     print("P-value:", rounded_p_value, add_significance_stars(p_value))
     
 save_figs = "D:\\uni\\Biologie\\Master\\Masterarbeit_NZ\\analyses\\python_analysis\\ethoVision_database\\sex_comparisson_figures\\sex_comp_means"    
     
-column = 'Bottom_fraction'
+column = 'boldness_fraction'
 analyze_phase_behavior(df, mask_day_1_to_2, column, 'Panic', save_figs)
 analyze_phase_behavior(df, mask_day_3_to_8, column, 'Stress', save_figs)
 analyze_phase_behavior(df, mask_day_9_to_22, column, 'Habituation', save_figs)
-analyze_phase_behavior(df, mask_day_23_to_27, column, 'Rehabituation', save_figs)
+analyze_phase_behavior(df, mask_day_25_to_27, column, 'Rehabituation', save_figs)
