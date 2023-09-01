@@ -16,8 +16,8 @@ from scipy.stats import ttest_rel, wilcoxon, shapiro, mannwhitneyu, ttest_ind
 #[print(x.shape) for x in histograms]
 # Usage
 tag = 'combined'
-#parent_directory = '/home/bgeurten/ethoVision_database/'
-parent_directory = "D:\\uni\\Biologie\\Master\\Masterarbeit_NZ\\analyses\\python_analysis\\ethoVision_database\\"
+parent_directory = '/home/bgeurten/ethoVision_database/'
+#parent_directory = "D:\\uni\\Biologie\\Master\\Masterarbeit_NZ\\analyses\\python_analysis\\ethoVision_database\\"
 
 db_position = f'{parent_directory}{tag}_daywise_analysis.csv'
 df = pd.read_csv(db_position)
@@ -37,28 +37,50 @@ hab_df = df.loc[mask_day_23_to_27, ['Sex', 'Tank_number', 'ID', 'Freezing_fracti
 
 #create a dataframe that contains the sum of freezing and frantic swimming for each individual fish over the respective days 
 # Group by 'ID' and 'Tank_number' and sum the columns for panic phase
+mode = 'max'#'median'
 sum_panic_df = panic_df.groupby(['ID', 'Tank_number', 'Sex']).agg({
-    'Freezing_fraction': 'sum',
-    'frantic_fraction': 'sum'
+    'Freezing_fraction': mode,
+    'frantic_fraction': mode
 }).reset_index()
 
 # Group by 'ID' and 'Tank_number' and sum the columns for stress phase
 sum_stress_df = stress_df.groupby(['ID', 'Tank_number', 'Sex']).agg({
-    'Freezing_fraction': 'sum',
-    'frantic_fraction': 'sum'
+    'Freezing_fraction': mode,
+    'frantic_fraction': mode
 }).reset_index()
 
 # Group by 'ID' and 'Tank_number' and sum the columns for habituated phase
 sum_hab_df = hab_df.groupby(['ID', 'Tank_number', 'Sex']).agg({
-    'Freezing_fraction': 'sum',
-    'frantic_fraction': 'sum'
+    'Freezing_fraction': mode,
+    'frantic_fraction': mode
 }).reset_index()
 
 # Group by 'ID' and 'Tank_number' and sum the columns for rehabituated phase
 sum_rehab_df = hab_df.groupby(['ID', 'Tank_number', 'Sex']).agg({
-    'Freezing_fraction': 'sum',
-    'frantic_fraction': 'sum'
+    'Freezing_fraction': mode,
+    'frantic_fraction': mode
 }).reset_index()
+
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(12, 6))
+sns.set(style="whitegrid")
+
+# Subplot 1: Freezing
+sns.boxplot(x="Sex", y="Freezing_fraction", data=sum_stress_df, ax=axes[0])
+sns.swarmplot(x="Sex", y="Freezing_fraction", data=sum_stress_df, color=".25", ax=axes[0]) # this line adds individual data points
+axes[0].set_title('Freezing_fraction')
+axes[0].set_xlabel('Sex')
+axes[0].set_ylabel('Freezing_fraction')
+
+# Subplot 2: Frantic
+sns.boxplot(x="Sex", y="frantic_fraction", data=sum_stress_df, ax=axes[1])
+sns.swarmplot(x="Sex", y="frantic_fraction", data=sum_stress_df, color=".25", ax=axes[1]) # this line adds individual data points
+axes[1].set_title('frantic_fraction')
+axes[1].set_xlabel('Sex')
+axes[1].set_ylabel('frantic_fraction')
+
+plt.tight_layout()
+plt.show()
+
 
 # plotting of all datapoints for either panic phase, stress phase, habituated phase or rehabituated phase
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(12, 6))
@@ -85,11 +107,12 @@ def plot_fractions(dataframe, title):
     plt.figure(figsize=(10, 6))
     
     # Calculate the mean freezing and frantic fractions for each sex
-    mean_data = dataframe.groupby('Sex').mean()
+    mean_data = dataframe.groupby('Sex').median()
     
     # Plot mean freezing fraction
     plt.subplot(1, 2, 1)
     sns.barplot(x=mean_data.index, y='Freezing_fraction', data=mean_data.reset_index(), ci=None)
+    sns.swarmplot(x='Sex', y='Freezing_fraction', data=dataframe, color=".25") # this line adds individual data points
     plt.xlabel('Sex')
     plt.ylabel('Mean Freezing Fraction')
     plt.title(f'{title} - Mean Freezing Fraction')
@@ -97,6 +120,7 @@ def plot_fractions(dataframe, title):
     # Plot mean frantic fraction
     plt.subplot(1, 2, 2)
     sns.barplot(x=mean_data.index, y='frantic_fraction', data=mean_data.reset_index(), ci=None, color='r')
+    sns.swarmplot(x='Sex', y='frantic_fraction', data=dataframe, color=".25") # this line adds individual data points
     plt.xlabel('Sex')
     plt.ylabel('Mean Frantic Fraction')
     plt.title(f'{title} - Mean Frantic Fraction')
