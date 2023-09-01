@@ -154,7 +154,7 @@ grouped_df= drug_df
 fps = 25
 grouped_control_df = grouped_df[grouped_df['treatment'] == 'control']
 grouped_application_df = grouped_df[grouped_df['treatment'] == 'application']
-merged_df = pd.merge(grouped_control_df, grouped_application_df, on=['Unique_ID', 'Sex', 'Time_bin'], suffixes=('_control', '_application'))
+merged_df = pd.merge(grouped_control_df, grouped_application_df, on=['Unique_ID', 'Time_bin', 'Sex'], suffixes=('_control', '_application'))#, how= 'outer')
 y_columns = ['tigmo_taxis', 'freezing', 'stress', 'boldness','frantic']
 
 for column in y_columns:
@@ -186,19 +186,62 @@ for column in y_columns:
     for ax in g.axes.flat:
         ax.axhline(0, color='black', linestyle='--')
         # Setting y-axis limits
-        ax.set_ylim(-bin_size_sec/3, bin_size_sec/3)
+    
+    if column != 'speed_cmPs_difference':
+        ax.set_ylim(-bin_size_sec/4, bin_size_sec/4)
+        g.set_axis_labels('Time (min)', f'{column}, sec')
 
-    g.set_axis_labels('Time (min)', f'{column}, sec')
+    else:
+        ax.set_ylim(-0.1,0.1)
+        g.set_axis_labels('Time (min)', f'{column}, cm/s')
+
     g.set_titles('Treatment: {col_name}')
     g.savefig(os.path.join(fig_dir,f'timeseries_{column}.svg'))
     g.savefig(os.path.join(fig_dir,f'timeseries_{column}.png'))
 
-
-
-
-
 plt.show()
 
 
+
+
+
+# Group by the new time bin, treatment, sex, tank number, and ID, then aggregate
+agg_dict = {
+    'tigmo_taxis_difference': 'sum',
+    'freezing_difference': 'sum',
+    'stress_difference': 'sum',
+    'frantic_difference': 'sum',
+    'boldness_difference': 'sum',
+    'speed_cmPs_difference': 'mean'
+}
+
+
+
+df_agg = merged_df.groupby(['Unique_ID', 'Sex']).agg(agg_dict).reset_index()
+
+
+for col in y_columns:
+    fig, ax = plt.subplots()
+    g = sns.boxplot(
+        data=df_agg, x="Sex", y=col,
+        notch=True, showcaps=True,
+        flierprops={"marker": "x"},
+        hue='Sex',
+        hue_order=['M','F'],
+        ax=ax)  # Specifying the ax parameter to plot on this subplot
+    
+    # Add a horizontal dashed line at y=0
+    ax.axhline(0, color='black', linestyle='--')
+    
+    # Save the figure
+    plt.savefig(os.path.join(fig_dir,f"{col}_boxplot.png"))
+    
+    if col != 'speed_cmPs_difference':
+        ax.set_ylabel(f'{col}, sec')
+
+    else:
+       ax.set_ylabel(f'{col}, cm/s')
+
+plt.show()
 
     
