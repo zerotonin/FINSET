@@ -141,7 +141,8 @@ def conduct_mann_whitney_u_test(data1, data2):
 # ║                  File I/O                ║
 # ╚══════════════════════════════════════════╝
 
-parent_dir = "/home/bgeurten/ethoVision_database"
+#parent_dir = "/home/bgeurten/ethoVision_database"
+parent_dir = "D:\\uni\\Biologie\\Master\\Masterarbeit_NZ\\analyses\\python_analysis\\ethoVision_database\\"
 target_csv = os.path.join(parent_dir,'drug_fish_data.csv')
 bin_size_sec = 60
 if os.path.isfile(target_csv): 
@@ -165,20 +166,22 @@ else:
 
     drug_df = pd.concat(all_drug_recordings)
     drug_df.to_csv(target_csv,index=False)
-    male_treatment_data = drug_df[(drug_df['Sex'] == 'M') & (drug_df['treatment'] == 'application')]['stress']
-    female_treatment_data = drug_df[(drug_df['Sex'] == 'F') & (drug_df['treatment'] == 'application')]['stress']
-    male_application_data = drug_df[(drug_df['Sex'] == 'M') & (drug_df['treatment'] == 'application')]['stress']
-    female_application_data = drug_df[(drug_df['Sex'] == 'F') & (drug_df['treatment'] == 'application')]['stress']
+    
+    grouped_df = drug_df.groupby(['Unique_ID', 'treatment', 'Sex'])['stress'].mean().reset_index()
+    male_treatment_data = grouped_df[(grouped_df['Sex'] == 'M') & (grouped_df['treatment'] == 'application')]['stress']
+    female_treatment_data = grouped_df[(grouped_df['Sex'] == 'F') & (grouped_df['treatment'] == 'application')]['stress']
+    male_application_data = grouped_df[(grouped_df['Sex'] == 'M') & (grouped_df['treatment'] == 'application')]['stress']
+    female_application_data = grouped_df[(grouped_df['Sex'] == 'F') & (grouped_df['treatment'] == 'application')]['stress']
     
     
 p_male_drug = conduct_sign_test(male_treatment_data)
 p_female_drug = conduct_sign_test(female_treatment_data)
-p_sex_comp_METH = conduct_mann_whitney_u_test(male_application_data, female_application_data) 
+p_sex_comp_METH = conduct_mann_whitney_u_test(male_application_data, female_application_data)
 
   
 print(f"Sign test p-value for males (treatment vs. zero baseline): {p_male_drug}")
 print(f"Sign test p-value for females (treatment vs. zero baseline): {p_female_drug}")
-print(f"Mann-Whitney U test p-value between males and females in the application group: {p_sex_comp_METH}")
+print(f"Mann-Whitney U test p-value between males and females in the application group (using mean per fish): {p_sex_comp_METH}")
 # ╔══════════════════════════════════════════╗
 # ║                  PLOTTING                ║
 # ╚══════════════════════════════════════════╝
