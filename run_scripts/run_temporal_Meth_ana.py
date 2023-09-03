@@ -4,6 +4,7 @@ import sqlite3
 import os
 from pathlib import Path
 from tqdm import tqdm
+from scipy import stats  
 
 def get_all_tra_files(folder):
     """
@@ -113,37 +114,27 @@ def reduce_tenmporal_resolution(df,bin_size_sec=10):
     return df_agg
 
 
-# statistics
-def conduct_statistical_analysis(df):
-    # Separate the DataFrame into male and female groups
-    male_df = df[df['Sex'] == 'M']
-    female_df = df[df['Sex'] == 'F']
+# ╔══════════════════════════════════════════╗
+# ║                  Statistics                ║
+# ╚══════════════════════════════════════════╝
 
-    # Define an alpha level for significance (e.g., 0.05)
-    alpha = 0.05
+def conduct_sign_test(data):
+    n = len(data)
+    zero_baseline = 0  # The value against which you want to test
 
-    # Perform a normality test (Shapiro-Wilk test) on the data
-    _, male_control_p_value = stats.shapiro(male_df[male_df['treatment'] == 'control']['stress'])
-    _, male_application_p_value = stats.shapiro(male_df[male_df['treatment'] == 'application']['stress'])
-    _, female_control_p_value = stats.shapiro(female_df[female_df['treatment'] == 'control']['stress'])
-    _, female_application_p_value = stats.shapiro(female_df[female_df['treatment'] == 'application']['stress'])
+    # Count the number of observations that deviate from the zero baseline
+    deviations = sum(1 for value in data if value != zero_baseline)
 
-    # Choose the appropriate test based on normality (t-test if normal, Mann-Whitney U test if not)
-    if (male_control_p_value > alpha) and (male_application_p_value > alpha):
-        male_p_value = stats.ttest_ind(male_df[male_df['treatment'] == 'control']['stress'],
-                                       male_df[male_df['treatment'] == 'application']['stress']).pvalue
-    else:
-        male_p_value = stats.mannwhitneyu(male_df[male_df['treatment'] == 'control']['stress'],
-                                          male_df[male_df['treatment'] == 'application']['stress']).pvalue
+    # Use the binomial test to calculate the p-value
+    p_value = 2 * min(deviations, n - deviations) / n
 
-    if (female_control_p_value > alpha) and (female_application_p_value > alpha):
-        female_p_value = stats.ttest_ind(female_df[female_df['treatment'] == 'control']['stress'],
-                                         female_df[female_df['treatment'] == 'application']['stress']).pvalue
-    else:
-        female_p_value = stats.mannwhitneyu(female_df[female_df['treatment'] == 'control']['stress'],
-                                            female_df[female_df['treatment'] == 'application']['stress']).pvalue
+    return p_value
 
-    return male_p_value, female_p_value
+def conduct_mann_whitney_u_test(data1, data2):
+    # Perform the Mann-Whitney U test
+    statistic, p_value = stats.mannwhitneyu(data1, data2)
+
+    return p_value
 
 
 # ╔══════════════════════════════════════════╗
@@ -174,10 +165,20 @@ else:
 
     drug_df = pd.concat(all_drug_recordings)
     drug_df.to_csv(target_csv,index=False)
-    male_p_value, female_p_value = conduct_statistical_analysis(drug_df)
+    male_treatment_data = drug_df[(drug_df['Sex'] == 'M') & (drug_df['treatment'] == 'application')]['stress']
+    female_treatment_data = drug_df[(drug_df['Sex'] == 'F') & (drug_df['treatment'] == 'application')]['stress']
+    male_application_data = drug_df[(drug_df['Sex'] == 'M') & (drug_df['treatment'] == 'application')]['stress']
+    female_application_data = drug_df[(drug_df['Sex'] == 'F') & (drug_df['treatment'] == 'application')]['stress']
     
-    print(f"P-value for males: {male_p_value}")
-    print(f"P-value for females: {female_p_value}")
+    
+p_male_drug = conduct_sign_test(male_treatment_data)
+p_female_drug = conduct_sign_test(female_treatment_data)
+p_sex_comp_METH = conduct_mann_whitney_u_test(male_application_data, female_application_data) 
+
+  
+print(f"Sign test p-value for males (treatment vs. zero baseline): {p_male_drug}")
+print(f"Sign test p-value for females (treatment vs. zero baseline): {p_female_drug}")
+print(f"Mann-Whitney U test p-value between males and females in the application group: {p_sex_comp_METH}")
 # ╔══════════════════════════════════════════╗
 # ║                  PLOTTING                ║
 # ╚══════════════════════════════════════════╝
