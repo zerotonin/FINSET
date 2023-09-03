@@ -113,6 +113,39 @@ def reduce_tenmporal_resolution(df,bin_size_sec=10):
     return df_agg
 
 
+# statistics
+def conduct_statistical_analysis(df):
+    # Separate the DataFrame into male and female groups
+    male_df = df[df['Sex'] == 'M']
+    female_df = df[df['Sex'] == 'F']
+
+    # Define an alpha level for significance (e.g., 0.05)
+    alpha = 0.05
+
+    # Perform a normality test (Shapiro-Wilk test) on the data
+    _, male_control_p_value = stats.shapiro(male_df[male_df['treatment'] == 'control']['stress'])
+    _, male_application_p_value = stats.shapiro(male_df[male_df['treatment'] == 'application']['stress'])
+    _, female_control_p_value = stats.shapiro(female_df[female_df['treatment'] == 'control']['stress'])
+    _, female_application_p_value = stats.shapiro(female_df[female_df['treatment'] == 'application']['stress'])
+
+    # Choose the appropriate test based on normality (t-test if normal, Mann-Whitney U test if not)
+    if (male_control_p_value > alpha) and (male_application_p_value > alpha):
+        male_p_value = stats.ttest_ind(male_df[male_df['treatment'] == 'control']['stress'],
+                                       male_df[male_df['treatment'] == 'application']['stress']).pvalue
+    else:
+        male_p_value = stats.mannwhitneyu(male_df[male_df['treatment'] == 'control']['stress'],
+                                          male_df[male_df['treatment'] == 'application']['stress']).pvalue
+
+    if (female_control_p_value > alpha) and (female_application_p_value > alpha):
+        female_p_value = stats.ttest_ind(female_df[female_df['treatment'] == 'control']['stress'],
+                                         female_df[female_df['treatment'] == 'application']['stress']).pvalue
+    else:
+        female_p_value = stats.mannwhitneyu(female_df[female_df['treatment'] == 'control']['stress'],
+                                            female_df[female_df['treatment'] == 'application']['stress']).pvalue
+
+    return male_p_value, female_p_value
+
+
 # ╔══════════════════════════════════════════╗
 # ║                  File I/O                ║
 # ╚══════════════════════════════════════════╝
@@ -141,7 +174,10 @@ else:
 
     drug_df = pd.concat(all_drug_recordings)
     drug_df.to_csv(target_csv,index=False)
-
+    male_p_value, female_p_value = conduct_statistical_analysis(drug_df)
+    
+    print(f"P-value for males: {male_p_value}")
+    print(f"P-value for females: {female_p_value}")
 # ╔══════════════════════════════════════════╗
 # ║                  PLOTTING                ║
 # ╚══════════════════════════════════════════╝
