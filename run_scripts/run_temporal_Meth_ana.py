@@ -168,14 +168,12 @@ else:
     drug_df.to_csv(target_csv,index=False)
     
     grouped_df = drug_df.groupby(['Unique_ID', 'treatment', 'Sex'])['stress'].mean().reset_index()
-    male_treatment_data = grouped_df[(grouped_df['Sex'] == 'M') & (grouped_df['treatment'] == 'application')]['stress']
-    female_treatment_data = grouped_df[(grouped_df['Sex'] == 'F') & (grouped_df['treatment'] == 'application')]['stress']
     male_application_data = grouped_df[(grouped_df['Sex'] == 'M') & (grouped_df['treatment'] == 'application')]['stress']
     female_application_data = grouped_df[(grouped_df['Sex'] == 'F') & (grouped_df['treatment'] == 'application')]['stress']
     
     
-p_male_drug = conduct_sign_test(male_treatment_data)
-p_female_drug = conduct_sign_test(female_treatment_data)
+p_male_drug = conduct_sign_test(male_application_data)
+p_female_drug = conduct_sign_test(female_application_data)
 p_sex_comp_METH = conduct_mann_whitney_u_test(male_application_data, female_application_data)
 
   
