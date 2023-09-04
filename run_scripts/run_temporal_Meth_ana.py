@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from tqdm import tqdm
 from scipy import stats  
+from statsmodels.stats.descriptivestats import sign_test
 
 def get_all_tra_files(folder):
     """
@@ -167,19 +168,10 @@ else:
     drug_df = pd.concat(all_drug_recordings)
     drug_df.to_csv(target_csv,index=False)
     
-    grouped_df = drug_df.groupby(['Unique_ID', 'treatment', 'Sex'])['stress'].mean().reset_index()
-    male_application_data = grouped_df[(grouped_df['Sex'] == 'M') & (grouped_df['treatment'] == 'application')]['stress']
-    female_application_data = grouped_df[(grouped_df['Sex'] == 'F') & (grouped_df['treatment'] == 'application')]['stress']
-    
-    
-p_male_drug = conduct_sign_test(male_application_data)
-p_female_drug = conduct_sign_test(female_application_data)
-p_sex_comp_METH = conduct_mann_whitney_u_test(male_application_data, female_application_data)
+    #grouped_df = drug_df.groupby(['Unique_ID', 'treatment', 'Sex'])['stress'].mean().reset_index()
+    #male_application_data = grouped_df[(grouped_df['Sex'] == 'M') & (grouped_df['treatment'] == 'application')]['stress']
+    #female_application_data = grouped_df[(grouped_df['Sex'] == 'F') & (grouped_df['treatment'] == 'application')]['stress']
 
-  
-print(f"Sign test p-value for males (treatment vs. zero baseline): {p_male_drug}")
-print(f"Sign test p-value for females (treatment vs. zero baseline): {p_female_drug}")
-print(f"Mann-Whitney U test p-value between males and females in the application group (using mean per fish): {p_sex_comp_METH}")
 # ╔══════════════════════════════════════════╗
 # ║                  PLOTTING                ║
 # ╚══════════════════════════════════════════╝
@@ -192,21 +184,23 @@ grouped_df= drug_df
 fps = 25
 grouped_control_df = grouped_df[grouped_df['treatment'] == 'control']
 grouped_application_df = grouped_df[grouped_df['treatment'] == 'application']
-merged_df = pd.merge(grouped_control_df, grouped_application_df, on=['Unique_ID', 'Time_bin', 'Sex'], suffixes=('_control', '_application'))#, how= 'outer')
+merged_df = pd.merge(grouped_control_df, grouped_application_df, on=['Unique_ID', 'Time_bin'], suffixes=('_control', '_application'))#, how= 'outer')
 y_columns = ['tigmo_taxis', 'freezing', 'stress', 'boldness','frantic']
 
 for column in y_columns:
     merged_df[f'{column}_difference'] = (merged_df[f'{column}_application'] - merged_df[f'{column}_control'])/(fps) #/ (merged_df[f'{column}_application'] + merged_df[f'{column}_control'])
 
 merged_df[f'speed_cmPs_difference'] = (merged_df[f'speed_cmPs_application'] - merged_df[f'speed_cmPs_control']) 
-                    
+merged_df['Sex'] = merged_df.Sex_control                   
 
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-fig_dir = '/home/bgeurten/ethoVision_database/meth_figures'
+fig_dir = ''#/home/bgeurten/ethoVision_database/meth_figures'
 # Defining y-axis columns
 y_columns = [f'{column}_difference' for column in ['tigmo_taxis', 'freezing', 'stress', 'boldness', 'frantic', 'speed_cmPs']]
+
+
 
 # Looping through each y-axis column
 for column in y_columns:
@@ -230,17 +224,14 @@ for column in y_columns:
         g.set_axis_labels('Time (min)', f'{column}, sec')
 
     else:
-        ax.set_ylim(-0.1,0.1)
+        ax.set_ylim(-0.3,0.3)
         g.set_axis_labels('Time (min)', f'{column}, cm/s')
 
     g.set_titles('Treatment: {col_name}')
-    g.savefig(os.path.join(fig_dir,f'timeseries_{column}.svg'))
-    g.savefig(os.path.join(fig_dir,f'timeseries_{column}.png'))
+    #g.savefig(os.path.join(fig_dir,f'timeseries_{column}.svg'))
+    #g.savefig(os.path.join(fig_dir,f'timeseries_{column}.png'))
 
 plt.show()
-
-
-
 
 
 # Group by the new time bin, treatment, sex, tank number, and ID, then aggregate
@@ -253,10 +244,25 @@ agg_dict = {
     'speed_cmPs_difference': 'mean'
 }
 
+drug_window =  (5.0,15.0)
 
+if drug_window != False:
+    
+    df_agg = merged_df.loc[merged_df.Time_bin >= drug_window[0]] 
+    df_agg = df_agg.loc[df_agg.Time_bin <= drug_window[1]]
+df_agg = df_agg.groupby(['Unique_ID', 'Sex']).agg(agg_dict).reset_index()
 
-df_agg = merged_df.groupby(['Unique_ID', 'Sex']).agg(agg_dict).reset_index()
-
+for column in y_columns:
+    p_female_drug = stats.wilcoxon(df_agg.loc[(df_agg['Sex'] == 'F',column)],None,method ='exact')
+    p_male_drug = stats.wilcoxon(df_agg.loc[(df_agg['Sex'] == 'M'),column],None,method ='exact')
+    p_sex_comp_METH = conduct_mann_whitney_u_test(df_agg.loc[(df_agg['Sex'] == 'F'),column], df_agg.loc[(df_agg['Sex'] == 'M'),column])
+    print(column)
+    print(''.join(["=" for i in range(len(column))]))
+    print(f"Sign test p-value for males (treatment vs. zero baseline): {p_male_drug}")
+    print(f"Sign test p-value for females (treatment vs. zero baseline): {p_female_drug}")
+    print(f"Mann-Whitney U test p-value between males and females in the application group (using mean per fish): {p_sex_comp_METH}")
+    print('')
+    
 
 for col in y_columns:
     fig, ax = plt.subplots()
@@ -271,15 +277,16 @@ for col in y_columns:
     # Add a horizontal dashed line at y=0
     ax.axhline(0, color='black', linestyle='--')
     
-    # Save the figure
-    plt.savefig(os.path.join(fig_dir,f"{col}_boxplot.png"))
     
     if col != 'speed_cmPs_difference':
         ax.set_ylabel(f'{col}, sec')
 
     else:
        ax.set_ylabel(f'{col}, cm/s')
+    # Save the figure
+    #plt.savefig(os.path.join(fig_dir,f"{col}_boxplot.png"))
 
 plt.show()
 
+    
     
